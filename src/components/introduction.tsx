@@ -1,50 +1,19 @@
 import { useState, useCallback } from "react";
 import { Link } from "./link";
-import { ChatEngine } from "@/features/chat/chat";
-import { VoiceEngine } from "@/features/messages/messages";
-import { LoadingSpinnerIcon } from "./loadingSpinnerIcon";
 
 type Props = {
-  chatEngine: ChatEngine;
-  openAiKey: string;
-  voiceEngine: VoiceEngine;
-  koeiroMapKey: string;
-  onChangeAiKey: (openAiKey: string) => void;
-  onChangeKoeiromapKey: (koeiromapKey: string) => void;
-  onLoad: () => Promise<void>;
+  onStart: () => Promise<void> | void;
 };
-export const Introduction = ({
-  chatEngine,
-  openAiKey,
-  voiceEngine,
-  koeiroMapKey,
-  onChangeAiKey,
-  onChangeKoeiromapKey,
-  onLoad,
-}: Props) => {
+export const Introduction = ({ onStart }: Props) => {
   const [opened, setOpened] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const handleAiKeyChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      onChangeAiKey(event.target.value);
-    },
-    [onChangeAiKey]
-  );
-
-  const handleKoeiromapKeyChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      onChangeKoeiromapKey(event.target.value);
-    },
-    [onChangeKoeiromapKey]
-  );
-
   const onClickStartButton = useCallback(async () => {
     setLoading(true);
-    await onLoad();
+    await onStart?.();
     setLoading(false);
     setOpened(false);
-  }, [onLoad]);
+  }, [onStart]);
 
   return opened ? (
     <div className="absolute z-40 w-full h-full px-24 py-40  bg-black/30 font-M_PLUS_2">
@@ -54,10 +23,10 @@ export const Introduction = ({
             About This Application
           </div>
           <div>
-            Enjoy chatting with 3D characters directly in your web browser using
-            your microphone, text input, and voice synthesis. You can also
-            change the character (VRM model) and customize their personality
-            settings.
+            Enjoy chatting with a 3D character directly in your web browser.
+            Responses are generated instantly by mirroring what you type, so you
+            can focus on testing layouts and interactions without external AI
+            services or API keys.
           </div>
         </div>
         <div className="my-24">
@@ -66,9 +35,8 @@ export const Introduction = ({
           </div>
           <div>
             This application leverages the @pixiv/three-vrm library for 3D model
-            rendering and manipulation, and employs Gemini Nano, a locally
-            executed Large Language Model (LLM) operating within the browser
-            environment, for conversational text generation and voice synthesis.
+            rendering and manipulation. Voice synthesis and external LLM
+            providers have been removed for a fully local, deterministic demo.
           </div>
         </div>
 
@@ -83,74 +51,23 @@ export const Introduction = ({
             each model.
           </div>
         </div>
-        {voiceEngine === "Koeiromap" && (
-          <div className="my-24">
-            <div className="my-8 font-bold typography-20 text-secondary">
-              Koeiromap API Key
-            </div>
-            <input
-              type="text"
-              placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-              value={koeiroMapKey}
-              onChange={handleKoeiromapKeyChange}
-              className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
-            ></input>
-            <div>
-              Please create your API key on rinna Developers.
-              <Link
-                url="https://developers.rinna.co.jp/product/#product=koeiromap-free"
-                label="More info"
-              />
-            </div>
-          </div>
-        )}
-        {chatEngine === "OpenAI" && (
-          <div className="my-24">
-            <div className="my-8 font-bold typography-20 text-secondary">
-              OpenAI API Key
-            </div>
-            <input
-              type="text"
-              placeholder="sk-..."
-              value={openAiKey}
-              onChange={handleAiKeyChange}
-              className="my-4 px-16 py-8 w-full h-40 bg-surface3 hover:bg-surface3-hover rounded-4 text-ellipsis"
-            ></input>
-            <div>
-              You can create your API key on
-              <Link
-                url="https://platform.openai.com/account/api-keys"
-                label="the OpenAI website"
-              />
-              . Please enter the created API key in the form below.
-            </div>
-            <div className="my-16">
-              ChatGPT The API is accessed directly from your browser.
-              Additionally, your API key and conversation content are not stored
-              on pixiv&#39;s servers.
-              <br />* The model currently in use is the ChatGPT API (GPT-3.5).
-            </div>
-          </div>
-        )}
         <div className="my-24">
           <button
             onClick={onClickStartButton}
             disabled={loading}
             className="font-bold bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled text-white px-24 py-8 rounded-oval"
           >
-            Get Started
+            Start Chatting
           </button>
         </div>
-        {loading && (
-          <div className="my-16 flex font-bold">
-            <div className="my-auto mr-8">
-              <LoadingSpinnerIcon />
-            </div>
-            <div>
-              Downloading and loading AI models. This may take a minute.
-            </div>
-          </div>
-        )}
+        <div className="my-16">
+          Need the original project? Visit the
+          <Link
+            url="https://github.com/pixiv/local-chat-vrm"
+            label=" GitHub repository"
+          />
+          .
+        </div>
       </div>
     </div>
   ) : null;

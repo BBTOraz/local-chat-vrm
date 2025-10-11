@@ -2,37 +2,23 @@ import { IconButton } from "./iconButton";
 
 type Props = {
   userMessage: string;
-  isMicRecording: boolean;
   isChatProcessing: boolean;
   onChangeUserMessage: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   onClickSendButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  onPointerDownMicButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  onPointerUpMicButton: (event: React.MouseEvent<HTMLButtonElement>) => void;
 };
 export const MessageInput = ({
   userMessage,
-  isMicRecording,
   isChatProcessing,
   onChangeUserMessage,
-  onPointerDownMicButton,
-  onPointerUpMicButton,
   onClickSendButton,
 }: Props) => {
   return (
     <div className="absolute bottom-0 z-20 w-screen">
       <div className="bg-base text-black">
         <div className="mx-auto max-w-4xl p-16">
-          <div className="grid grid-flow-col gap-[8px] grid-cols-[min-content_1fr_min-content]">
-            <IconButton
-              iconName="24/Microphone"
-              className="bg-secondary hover:bg-secondary-hover active:bg-secondary-press disabled:bg-secondary-disabled"
-              isProcessing={isMicRecording}
-              disabled={isChatProcessing}
-              onPointerDown={onPointerDownMicButton}
-              onPointerUp={onPointerUpMicButton}
-            />
+          <div className="grid grid-flow-col gap-[8px] grid-cols-[1fr_min-content]">
             <input
               type="text"
               placeholder="Ask me anything!"
@@ -50,9 +36,6 @@ export const MessageInput = ({
               onClick={onClickSendButton}
             />
           </div>
-        </div>
-        <div className="py-4 bg-[#413D43] text-center text-white font-Montserrat">
-          powered by VRoid
         </div>
       </div>
     </div>
