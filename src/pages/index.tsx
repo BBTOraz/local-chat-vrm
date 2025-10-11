@@ -1,78 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
-import VrmViewer from "@/components/vrmViewer";
-import { Message } from "@/features/messages/messages";
-import { MessageInputContainer } from "@/components/messageInputContainer";
 import { Introduction } from "@/components/introduction";
+import { MessageInputContainer } from "@/components/messageInputContainer";
+import { Sidebar } from "@/components/sidebar/Sidebar";
+import { ChatViewport } from "@/components/chat/ChatViewport";
+import { ThinkingPanel } from "@/components/thinking/ThinkingPanel";
 import { Meta } from "@/components/meta";
-import { ChatLog } from "@/components/chatLog";
+import VrmViewer from "@/components/vrmViewer";
+import { SummarySpeaker } from "@/components/SummarySpeaker";
+import { ChatProvider, useChatState } from "@/state/chatStore";
+import { classNames } from "@/utils/classNames";
+import { useChatActions } from "@/hooks/useChatActions";
+import { useEffect } from "react";
 
-export default function Home() {
-  const [chatLog, setChatLog] = useState<Message[]>([]);
-  const [chatProcessing, setChatProcessing] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const stored = window.localStorage.getItem("chatVRMHistory");
-    if (!stored) {
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(stored) as Message[];
-      if (Array.isArray(parsed)) {
-        setChatLog(parsed);
-      }
-    } catch (error) {
-      console.warn("Failed to parse stored chat log", error);
-      window.localStorage.removeItem("chatVRMHistory");
-    }
-  }, []);
+const Layout = () => {
+  const { isSidebarCollapsed } = useChatState();
+  const { refreshConversations } = useChatActions();
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    window.localStorage.setItem("chatVRMHistory", JSON.stringify(chatLog));
-  }, [chatLog]);
-
-  const handleSendChat = useCallback(
-    (text: string) => {
-      const trimmed = text.trim();
-      if (!trimmed) {
-        setChatProcessing(false);
-        return;
-      }
-
-      setChatProcessing(true);
-      setChatLog((prev) => {
-        const historyWithUser: Message[] = [
-          ...prev,
-          { role: "user", content: trimmed },
-        ];
-        const updatedHistory: Message[] = [
-          ...historyWithUser,
-          { role: "assistant", content: trimmed },
-        ];
-        return updatedHistory;
-      });
-      setChatProcessing(false);
-    },
-    []
-  );
+    void refreshConversations();
+  }, [refreshConversations]);
 
   return (
-    <div className={"font-M_PLUS_2"}>
+    <div className="relative min-h-[100svh] overflow-hidden font-M_PLUS_2 text-primary">
       <Meta />
-      <Introduction onStart={async () => undefined} />
-      <ChatLog messages={chatLog} />
       <VrmViewer />
-      <MessageInputContainer
-        isChatProcessing={chatProcessing}
-        onChatProcessStart={handleSendChat}
-      />
+      <Sidebar />
+      <Introduction onStart={async () => undefined} />
+      <main
+        className={classNames(
+          "relative flex min-h-[100svh] flex-col transition-[margin] duration-300 ease-in-out",
+          isSidebarCollapsed ? "ml-[64px]" : "ml-[280px]"
+        )}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/90 via-white/70 to-white/40" />
+        <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-1 flex-col gap-24 px-24 pb-64 pt-40">
+          <ThinkingPanel />
+          <ChatViewport />
+        </div>
+      </main>
+      <MessageInputContainer />
+      <SummarySpeaker />
     </div>
+  );
+};
+
+export default function Home() {
+  return (
+    <ChatProvider>
+      <Layout />
+    </ChatProvider>
   );
 }

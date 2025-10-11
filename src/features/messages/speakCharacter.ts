@@ -13,6 +13,7 @@ const createSpeakCharacter = () => {
   let lastTime = 0;
   let prevFetchPromise: Promise<unknown> = Promise.resolve();
   let prevSpeakPromise: Promise<unknown> = Promise.resolve();
+  let stopRequested = false;
 
   const continuousFetchAudio = (
     screenplay: Screenplay,
@@ -23,6 +24,10 @@ const createSpeakCharacter = () => {
     onComplete?: () => void
   ) => {
     const fetchPromise = prevFetchPromise.then(async () => {
+      if (stopRequested) {
+        return null;
+      }
+
       const now = Date.now();
       if (now - lastTime < fetchInterval) {
         await wait(fetchInterval - (now - lastTime));
@@ -34,18 +39,17 @@ const createSpeakCharacter = () => {
     });
 
     prevFetchPromise = fetchPromise;
-    prevSpeakPromise = Promise.all([fetchPromise, prevSpeakPromise]).then(
-      ([audioBuffer]) => {
-        onStart?.();
-        if (!audioBuffer) {
+    prevSpeakPromise = Promise.all([fetchPromise, prevSpeakPromise])
+      .then(async ([audioBuffer]) => {
+        if (stopRequested || !audioBuffer) {
           return;
         }
-        return viewer.model?.speak(audioBuffer, screenplay);
-      }
-    );
-    prevSpeakPromise.then(() => {
-      onComplete?.();
-    });
+        onStart?.();
+        await viewer.model?.speak(audioBuffer, screenplay);
+      })
+      .finally(() => {
+        onComplete?.();
+      });
   };
 
   const getFunctionToFetchKoeiromapAudio =
@@ -88,6 +92,8 @@ const createSpeakCharacter = () => {
     onStart?: () => void,
     onComplete?: () => void
   ) => {
+    stopRequested = false;
+
     const talk = screenplay.talk;
     switch (talk.voiceEngine) {
       case "Koeiromap":
@@ -115,9 +121,18 @@ const createSpeakCharacter = () => {
     }
   };
 
+  const stop = (viewer: Viewer) => {
+    stopRequested = true;
+    prevFetchPromise = Promise.resolve();
+    prevSpeakPromise = Promise.resolve();
+    lastTime = 0;
+    viewer.model?.stopSpeaking();
+  };
+
   return {
     load,
     speak,
+    stop,
   };
 };
 
