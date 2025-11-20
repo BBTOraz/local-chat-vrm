@@ -1,0 +1,25 @@
+.textButton {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 9999px;
+  background-color: #856292;
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.textButton:hover:not(:disabled) {
+  background-color: #8E76A1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.textButton:active:not(:disabled) {
+  background-color: #988BB0;
+}
+
+.textButton:disabled {
+  background-color: rgba(111, 72, 105, 0.3);
+  cursor: not-allowed;
+}

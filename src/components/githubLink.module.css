@@ -1,0 +1,41 @@
+.githubLink {
+  position: absolute;
+  right: 0;
+  z-index: 10;
+  margin: 24px;
+}
+
+.link {
+  display: block;
+  text-decoration: none;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 12px;
+  background-color: #1F2328;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.container:hover {
+  background-color: #33383E;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.container:active {
+  background-color: #565A60;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.text {
+  margin: 0 4px;
+  color: white;
+  font-weight: 700;
+}

@@ -1,0 +1,281 @@
+.panel {
+  border-radius: 16px;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.toggleButton {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #856292;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggleButton:hover {
+  background-color: rgba(245, 245, 245, 0.8);
+}
+
+.toggleButton:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #70D7E2;
+}
+
+.toggleContent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.emoji {
+  font-size: 16px;
+}
+
+.toggleText {
+  font-size: 12px;
+}
+
+.duration {
+  color: #70D7E2;
+}
+
+.arrow {
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.arrowOpen {
+  transform: rotate(180deg);
+}
+
+.content {
+  max-height: 300px;
+  overflow-y: auto;
+  border-top: 1px solid rgba(229, 231, 235, 0.6);
+  padding: 12px 16px;
+  font-size: 12px;
+}
+
+.emptyState {
+  font-size: 14px;
+  color: rgba(133, 98, 146, 0.6);
+}
+
+.iterationBlock {
+  font-size: 14px;
+  color: #856292;
+}
+
+.iterationSection {
+  margin-bottom: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #70D7E2;
+}
+
+.draftBox {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 12px;
+  background-color: rgba(245, 245, 245, 0.8);
+  font-size: 14px;
+  font-family: monospace;
+  line-height: 1.6;
+  color: #856292;
+}
+
+.draftPlaceholder {
+  color: rgba(133, 98, 146, 0.5);
+}
+
+.solverFooter {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(133, 98, 146, 0.6);
+}
+
+.contextDetails {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 12px;
+  background-color: white;
+}
+
+.contextSummary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #70D7E2;
+}
+
+.contextList {
+  margin-top: 8px;
+  padding-left: 16px;
+  list-style-type: disc;
+  font-size: 12px;
+  color: rgba(133, 98, 146, 0.8);
+}
+
+.contextList li {
+  margin: 4px 0;
+}
+
+.toolsContainer {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  border-radius: 12px;
+  background-color: white;
+}
+
+.toolsHeader {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #70D7E2;
+}
+
+.toolsList {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(133, 98, 146, 0.8);
+}
+
+.toolItem {
+  margin: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toolHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolName {
+  font-weight: 600;
+}
+
+.toolStatus {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(133, 98, 146, 0.5);
+}
+
+.toolOutput {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: rgba(245, 245, 245, 0.8);
+  font-size: 13px;
+  color: #856292;
+}
+
+.verifierIdle {
+  margin-top: 8px;
+  font-size: 14px;
+  color: rgba(133, 98, 146, 0.6);
+}
+
+.verifierPending {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(133, 98, 146, 0.7);
+}
+
+.pulseIcon {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.verifierApproved {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid #10b981;
+  border-radius: 12px;
+  background-color: #d1fae5;
+  font-size: 14px;
+  color: #059669;
+}
+
+.verifierApprovedTitle {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.verifierRejected {
+  margin-top: 8px;
+  padding: 12px 16px;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  background-color: #fef3c7;
+  font-size: 14px;
+  color: #b45309;
+}
+
+.verifierRejectedTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.verifierChanges {
+  margin-top: 6px;
+  color: #856292;
+}
+
+.verifierReasons {
+  margin-top: 6px;
+  padding-left: 16px;
+  list-style-type: disc;
+  color: #856292;
+}
+
+.verifierReasons li {
+  margin: 2px 0;
+}
+
+.divider {
+  margin-top: 8px;
+  padding-top: 8px;
+}
+
+.divider hr {
+  border-top: 1px dashed rgba(229, 231, 235, 0.6);
+}

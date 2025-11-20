@@ -1,0 +1,254 @@
+/* Sidebar Styles */
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100svh;
+  background-color: #FFFFFF; /* base - чистый белый */
+  border-right: 1px solid #6FBEF7; /* secondary - светло-голубой */
+  transition: width 0.3s ease-in-out;
+  z-index: 30;
+}
+
+.sidebarExpanded {
+  width: 280px;
+}
+
+.sidebarCollapsed {
+  width: 80px; /* Увеличена с 64px для логотипа */
+}
+
+.sidebarContent {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px;
+  border-bottom: 1px solid #6FBEF7;
+}
+
+.logo {
+  width: 48px; /* Увеличено с 32px */
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 24px; /* Увеличено с 18px */
+  font-weight: bold;
+  color: #1B78BD; /* primary - синий ENU */
+  flex: 1;
+  letter-spacing: 0.05em;
+}
+
+.toggleButton {
+  margin-left: auto;
+  border-radius: 50%;
+  background-color: transparent;
+  padding: 8px;
+  color: #1B78BD; /* primary - синий ENU */
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.toggleButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Контейнер для кнопки "Новая" */
+.newButtonContainer {
+  padding: 16px;
+}
+
+.newButton {
+  width: 100%;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background-color: #1B78BD; /* primary - синий ENU */
+  padding: 12px 16px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 120, 189, 0.2);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* В свернутом режиме кнопка круглая с логотипом */
+.sidebarCollapsed .newButton {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.newButtonIcon {
+  width: 36px; /* Увеличено с 28px */
+  height: 36px;
+  object-fit: contain;
+}
+
+.newButton:hover {
+  background-color: #2589CE; /* primary-hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(27, 120, 189, 0.3);
+}
+
+.newButton:active {
+  background-color: #165F9A; /* primary-press */
+  transform: translateY(0);
+}
+
+.toggleButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.searchContainer {
+  padding: 0 16px 16px;
+}
+
+.searchInput {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #6FBEF7; /* secondary - светло-голубой */
+  background-color: #F5F9FC; /* base-secondary - светло-голубой фон */
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #1B78BD; /* primary */
+  outline: none;
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #1B78BD; /* primary */
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(27, 120, 189, 0.1);
+}
+
+.searchInput::placeholder {
+  color: rgba(27, 120, 189, 0.5);
+}
+
+.conversationsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px;
+}
+
+.conversationsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.conversationsList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.conversationsList::-webkit-scrollbar-thumb {
+  background-color: #6FBEF7; /* secondary - светло-голубой */
+  border-radius: 3px;
+}
+
+.conversationsList::-webkit-scrollbar-thumb:hover {
+  background-color: #1B78BD; /* primary - синий ENU */
+}
+
+.group {
+  margin-bottom: 24px;
+}
+
+.groupTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(27, 120, 189, 0.6); /* primary с прозрачностью */
+  padding: 8px 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.conversationItem {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  text-decoration: none;
+  min-height: 60px;
+  width: 100%;
+  background: none;
+  text-align: left;
+}
+
+/* В свернутом режиме центрируем иконку */
+.sidebarCollapsed .conversationItem {
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.conversationItem:hover {
+  background-color: #F5F9FC; /* base-secondary - светло-голубой фон */
+}
+
+.conversationItemActive {
+  background-color: rgba(27, 120, 189, 0.1); /* primary с прозрачностью */
+  border-color: #6FBEF7; /* secondary */
+}
+
+.conversationIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.conversationContent {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.conversationTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1B78BD; /* primary - синий ENU */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 4px;
+  display: block;
+  width: 100%;
+}
+
+.conversationTime {
+  font-size: 11px;
+  color: rgba(27, 120, 189, 0.6); /* primary с прозрачностью */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emptyState {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.emptyStateText {
+  font-size: 13px;
+  color: rgba(27, 120, 189, 0.6); /* primary с прозрачностью */
+  line-height: 1.5;
+}

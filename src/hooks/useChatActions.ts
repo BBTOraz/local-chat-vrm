@@ -98,11 +98,14 @@ const createIteration = (index: number): AgentIteration => ({
 });
 
 const mapConversationMessages = (
-  raw: ConversationMessage[]
+  raw: any[]
 ): ConversationMessage[] => {
   return raw.map((message) => ({
-    ...message,
     messageId: message.messageId || generateId("msg"),
+    conversationId: message.conversationId,
+    role: message.type || message.role, // Сервер возвращает "type", а не "role"
+    content: message.content,
+    timestamp: message.timestamp,
   }));
 };
 

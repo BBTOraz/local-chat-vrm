@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useChatState } from "@/state/chatStore";
-import { classNames } from "@/utils/classNames";
 import { formatDuration } from "@/utils/datetime";
 import type { AgentIteration, VerifierState } from "@/types/chat";
+import styles from "./ThinkingPanel.module.css";
 
 const TIMER_REFRESH_MS = 800;
 
@@ -64,29 +64,26 @@ export const ThinkingPanel = () => {
   const hasIterations = agentRun.iterations.length > 0;
 
   return (
-    <section className="rounded-16 border border-surface1-hover bg-white shadow-md">
+    <section className={styles.panel}>
       <button
         id="thinking-toggle"
         aria-expanded={isOpen}
         aria-controls="thinking-panel"
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-12 rounded-16 px-24 py-20 text-left text-sm font-semibold text-primary hover:bg-surface0 focus:outline-none focus:ring-2 focus:ring-secondary"
+        className={styles.toggleButton}
       >
-        <span className="flex items-center gap-8">
-          <span className="text-lg">🤖</span>
-          <span>
-            Думал на протяжении{" "}
-            <span id="thinking-duration" className="text-secondary">
+        <span className={styles.toggleContent}>
+          <span className={styles.emoji}>🤖</span>
+          <span className={styles.toggleText}>
+            Думал{" "}
+            <span id="thinking-duration" className={styles.duration}>
               {duration}
             </span>
           </span>
         </span>
         <span
-          className={classNames(
-            "transition-transform duration-200",
-            isOpen ? "rotate-180" : ""
-          )}
+          className={`${styles.arrow} ${isOpen ? styles.arrowOpen : ''}`}
           aria-hidden="true"
         >
           ▼
@@ -96,10 +93,10 @@ export const ThinkingPanel = () => {
       <div
         id="thinking-panel"
         hidden={!isOpen}
-        className="max-h-[420px] overflow-y-auto border-t border-surface1-hover px-24 py-24"
+        className={styles.content}
       >
         {!hasIterations && (
-          <div className="text-sm text-primary/60">
+          <div className={styles.emptyState}>
             Ожидание событий от агента...
           </div>
         )}
@@ -113,7 +110,7 @@ export const ThinkingPanel = () => {
         ))}
 
         {agentRun.error && (
-          <div className="mt-16 rounded-12 border border-red-400 bg-red-50 px-16 py-12 text-sm text-red-600">
+          <div className="mt-16 rounded-xl border border-red-400 bg-red-50 px-16 py-12 text-sm text-red-600">
             🚨 Ошибка: {agentRun.error}
           </div>
         )}
@@ -132,19 +129,19 @@ const IterationBlock = ({
   const { solver, verifier } = iteration;
 
   return (
-    <div className="space-y-16 text-sm text-primary">
-      <div>
-        <div className="flex items-center gap-8 text-base font-semibold text-secondary">
+    <div className={styles.iterationBlock}>
+      <div className={styles.iterationSection}>
+        <div className={styles.sectionHeader}>
           <span role="img" aria-hidden="true">
             💭
           </span>
           Solver
         </div>
-        <div className="mt-8 rounded-12 border border-surface1-hover bg-surface0 px-16 py-16 text-sm font-mono leading-relaxed text-primary">
+        <div className={styles.draftBox}>
           {solver.draft ? (
             solver.draft
           ) : (
-            <span className="text-primary/50">Генерирует черновик...</span>
+            <span className={styles.draftPlaceholder}>Генерирует черновик...</span>
           )}
         </div>
         <SolverFooter solverStreaming={solver.streaming} />
@@ -152,8 +149,8 @@ const IterationBlock = ({
         <SolverTools tools={solver.tools} />
       </div>
 
-      <div>
-        <div className="flex items-center gap-8 text-base font-semibold text-secondary">
+      <div className={styles.iterationSection}>
+        <div className={styles.sectionHeader}>
           <span role="img" aria-hidden="true">
             {VERIFIER_ICON[verifier.status]}
           </span>
@@ -163,8 +160,8 @@ const IterationBlock = ({
       </div>
 
       {!isLast && (
-        <div className="pt-8">
-          <hr className="border-dashed border-surface1-hover" />
+        <div className={styles.divider}>
+          <hr />
         </div>
       )}
     </div>
@@ -173,7 +170,7 @@ const IterationBlock = ({
 
 const SolverFooter = ({ solverStreaming }: { solverStreaming: boolean }) => {
   return (
-    <div className="mt-8 text-xs font-medium uppercase tracking-widest text-primary/60">
+    <div className={styles.solverFooter}>
       {solverStreaming ? "Печатает..." : "✅ Черновик готов"}
     </div>
   );
@@ -185,11 +182,11 @@ const SolverContextList = ({ contexts }: { contexts: string[] }) => {
   }
 
   return (
-    <details className="mt-12 rounded-12 border border-surface1-hover bg-white px-16 py-12">
-      <summary className="cursor-pointer text-xs font-semibold text-secondary">
+    <details className={styles.contextDetails}>
+      <summary className={styles.contextSummary}>
         Источники (RAG)
       </summary>
-      <ul className="mt-8 list-disc space-y-4 pl-16 text-xs text-primary/80">
+      <ul className={styles.contextList}>
         {contexts.map((context, index) => (
           <li key={`${context}-${index}`}>{context}</li>
         ))}
@@ -208,21 +205,21 @@ const SolverTools = ({
   }
 
   return (
-    <div className="mt-12 space-y-8 rounded-12 border border-surface1-hover bg-white px-16 py-12">
-      <div className="text-xs font-semibold uppercase tracking-widest text-secondary">
+    <div className={styles.toolsContainer}>
+      <div className={styles.toolsHeader}>
         Инструменты
       </div>
-      <ul className="space-y-6 text-xs text-primary/80">
+      <ul className={styles.toolsList}>
         {tools.map((tool, index) => (
-          <li key={`${tool.name}-${index}`} className="flex flex-col gap-2">
-            <div className="flex items-center gap-8">
-              <span className="font-semibold">{tool.name}</span>
-              <span className="text-[11px] uppercase tracking-widest text-primary/50">
+          <li key={`${tool.name}-${index}`} className={styles.toolItem}>
+            <div className={styles.toolHeader}>
+              <span className={styles.toolName}>{tool.name}</span>
+              <span className={styles.toolStatus}>
                 {tool.status}
               </span>
             </div>
             {tool.output && (
-              <div className="rounded-8 bg-surface0 px-12 py-8 text-[13px] text-primary">
+              <div className={styles.toolOutput}>
                 {tool.output}
               </div>
             )}
@@ -237,21 +234,21 @@ const VerifierDetails = ({ verifier }: { verifier: VerifierState }) => {
   switch (verifier.status) {
     case "idle":
       return (
-        <div className="mt-8 text-sm text-primary/60">
+        <div className={styles.verifierIdle}>
           {VERIFIER_STATUS_LABEL[verifier.status]}
         </div>
       );
     case "pending":
       return (
-        <div className="mt-8 flex items-center gap-8 text-sm text-primary/70">
-          <span className="animate-pulse">⏳</span>
+        <div className={styles.verifierPending}>
+          <span className={styles.pulseIcon}>⏳</span>
           {VERIFIER_STATUS_LABEL[verifier.status]}
         </div>
       );
     case "approved":
       return (
-        <div className="mt-8 space-y-4 rounded-12 border border-emerald-400 bg-emerald-50 px-16 py-12 text-sm text-emerald-600">
-          <div className="font-semibold">
+        <div className={styles.verifierApproved}>
+          <div className={styles.verifierApprovedTitle}>
             {VERIFIER_STATUS_LABEL[verifier.status]}
           </div>
           {verifier.message && <p>{verifier.message}</p>}
@@ -260,15 +257,15 @@ const VerifierDetails = ({ verifier }: { verifier: VerifierState }) => {
     case "rejected":
     default:
       return (
-        <div className="mt-8 space-y-6 rounded-12 border border-amber-500 bg-amber-50 px-16 py-12 text-sm text-amber-700">
-          <div className="font-semibold">
+        <div className={styles.verifierRejected}>
+          <div className={styles.verifierRejectedTitle}>
             {VERIFIER_STATUS_LABEL[verifier.status]}
           </div>
           {verifier.requiredChanges && (
-            <p className="text-primary">{verifier.requiredChanges}</p>
+            <p className={styles.verifierChanges}>{verifier.requiredChanges}</p>
           )}
           {verifier.reasons.length > 0 && (
-            <ul className="list-disc space-y-2 pl-16 text-primary">
+            <ul className={styles.verifierReasons}>
               {verifier.reasons.map((reason, index) => (
                 <li key={`${reason}-${index}`}>{reason}</li>
               ))}

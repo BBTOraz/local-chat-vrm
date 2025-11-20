@@ -1,0 +1,45 @@
+.container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin-bottom: 104px;
+  width: 100%;
+}
+
+.wrapper {
+  margin: 0 auto;
+  max-width: 56rem;
+  width: 100%;
+  padding: 16px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  padding: 8px 24px;
+  background-color: #70D7E2;
+  border-radius: 8px 8px 0 0;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.content {
+  padding: 16px 24px;
+}
+
+.message {
+  color: #70D7E2;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

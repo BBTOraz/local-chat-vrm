@@ -7,6 +7,7 @@ import { Settings } from "./settings";
 import { ViewerContext } from "@/features/vrmViewer/viewerContext";
 import { AssistantText } from "./assistantText";
 import { ChatEngine } from "@/features/chat/chat";
+import styles from "./menu.module.css";
 
 type Props = {
   chatEngine: ChatEngine;
@@ -107,8 +108,8 @@ export const Menu = ({
 
   return (
     <>
-      <div className="absolute z-10 m-24">
-        <div className="grid grid-flow-col gap-[8px]">
+      <div className={styles.menuContainer}>
+        <div className={styles.buttonGroup}>
           <IconButton
             iconName="24/Menu"
             label="Overview & Settings"
@@ -162,7 +163,7 @@ export const Menu = ({
       )}
       <input
         type="file"
-        className="hidden"
+        className={styles.hiddenFileInput}
         accept=".vrm"
         ref={fileInputRef}
         onChange={handleChangeVrmFile}

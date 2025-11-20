@@ -12,11 +12,8 @@ import { useChatDispatch, useChatState } from "@/state/chatStore";
 import type { ChatSettings } from "@/types/chat";
 import { ViewerContext } from "@/features/vrmViewer/viewerContext";
 import { speakCharacter } from "@/features/messages/speakCharacter";
-import { classNames } from "@/utils/classNames";
-
-type SpeechRecognitionInstance =
-  | SpeechRecognition
-  | (SpeechRecognition & { stop: () => void });
+import { useTranscription } from "@/features/transcription/transcription";
+import styles from "./messageInputContainer.module.css";
 
 const deriveVisibility = (showThinking: boolean, debug: boolean) => {
   if (debug) {
@@ -33,22 +30,15 @@ export const MessageInputContainer = () => {
   const dispatch = useChatDispatch();
   const { sendMessage } = useChatActions();
   const { viewer } = useContext(ViewerContext);
+  const { transcribe, stopTranscribing } = useTranscription();
 
   const [userMessage, setUserMessage] = useState("");
   const [isExtendedOpen, setIsExtendedOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
-
   const isVoiceSupported = useMemo(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return Boolean(
-      (window as unknown as { SpeechRecognition?: unknown })
-        .SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: unknown })
-        .webkitSpeechRecognition
-    );
+    // OpenAI Whisper всегда доступен (если есть API ключ)
+    return true;
   }, []);
 
   useEffect(() => {
@@ -59,10 +49,12 @@ export const MessageInputContainer = () => {
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
+      // Cleanup on unmount
+      if (isListening) {
+        stopTranscribing();
+      }
     };
-  }, []);
+  }, [isListening, stopTranscribing]);
 
   const updateSettings = useCallback(
     (next: Partial<ChatSettings>) => {
@@ -86,14 +78,13 @@ export const MessageInputContainer = () => {
     }
 
     if (isListening) {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
+      stopTranscribing();
       setIsListening(false);
     }
 
     setUserMessage("");
     void sendMessage(trimmed);
-  }, [isListening, sendMessage, userMessage]);
+  }, [isListening, sendMessage, userMessage, stopTranscribing]);
 
   const handleToggleExtended = useCallback(() => {
     setIsExtendedOpen((prev) => !prev);
@@ -107,63 +98,41 @@ export const MessageInputContainer = () => {
     dispatch({ type: "SET_VOICE_ACTIVE", active: false });
   }, [dispatch, viewer]);
 
-  const handleVoiceInputClick = useCallback(() => {
+  const handleVoiceInputClick = useCallback(async () => {
+    console.log('🎤 [Voice Input] Button clicked', { isListening, isVoiceSupported });
+    
     if (!isVoiceSupported) {
+      console.warn('⚠️ [Voice Input] Voice not supported');
       return;
     }
 
     if (isListening) {
-      recognitionRef.current?.stop();
-      recognitionRef.current = null;
+      console.log('⏹️ [Voice Input] Stopping transcription');
+      stopTranscribing();
       setIsListening(false);
       return;
     }
 
-    const RecognitionCtor =
-      (window as unknown as { SpeechRecognition?: typeof SpeechRecognition })
-        .SpeechRecognition ??
-      (window as unknown as {
-        webkitSpeechRecognition?: typeof SpeechRecognition;
-      }).webkitSpeechRecognition;
-
-    if (!RecognitionCtor) {
-      return;
-    }
-
-    const recognition = new RecognitionCtor();
-    recognition.lang = "ru-RU";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript ?? "";
+    try {
+      console.log('🎙️ [Voice Input] Starting OpenAI Whisper transcription...');
+      setIsListening(true);
+      
+      const transcript = await transcribe();
+      
+      console.log('✅ [Voice Input] Transcription received:', transcript);
+      
       if (transcript) {
         setUserMessage((prev) =>
           prev ? `${prev} ${transcript}` : transcript
         );
       }
-      recognition.stop();
-    };
-
-    recognition.onerror = (event) => {
-      console.warn("Speech recognition error:", event.error);
+      
       setIsListening(false);
-      recognition.stop();
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-      recognitionRef.current = null;
-    };
-
-    try {
-      recognition.start();
-      recognitionRef.current = recognition;
-      setIsListening(true);
     } catch (error) {
-      console.warn("Speech recognition start failed:", error);
+      console.error('❌ [Voice Input] Transcription failed:', error);
+      setIsListening(false);
     }
-  }, [isListening, isVoiceSupported]);
+  }, [isListening, isVoiceSupported, transcribe, stopTranscribing]);
 
   const handleModeChange = (mode: ChatSettings["mode"]) => {
     updateSettings({ mode });
@@ -190,13 +159,13 @@ export const MessageInputContainer = () => {
   };
 
   const extendedMenu = (
-    <div className="space-y-16 text-sm text-primary">
-      <section>
-        <header className="mb-8 text-xs font-semibold uppercase tracking-widest text-primary/60">
+    <div className={styles.extendedMenu}>
+      <section className={styles.section}>
+        <header className={styles.sectionHeader}>
           Режим
         </header>
-        <div className="flex flex-wrap gap-12">
-          <label className="flex items-center gap-6 rounded-12 border border-surface1-hover px-12 py-8 hover:border-secondary">
+        <div className={styles.modeOptions}>
+          <label className={styles.modeLabel}>
             <input
               type="radio"
               name="chat-mode"
@@ -206,7 +175,7 @@ export const MessageInputContainer = () => {
             />
             <span>Обычный</span>
           </label>
-          <label className="flex items-center gap-6 rounded-12 border border-surface1-hover px-12 py-8 hover:border-secondary">
+          <label className={styles.modeLabel}>
             <input
               type="radio"
               name="chat-mode"
@@ -219,30 +188,30 @@ export const MessageInputContainer = () => {
         </div>
       </section>
 
-      <section className={classNames(settings.mode === "simple" && "opacity-50")}>
-        <header className="mb-8 text-xs font-semibold uppercase tracking-widest text-primary/60">
+      <section className={`${styles.section} ${settings.mode === "simple" ? styles.disabledSection : ''}`}>
+        <header className={styles.sectionHeader}>
           Провайдеры
         </header>
-        <div className="grid gap-12 md:grid-cols-2">
-          <label className="flex flex-col gap-4 text-sm">
-            <span className="text-xs text-primary/60">Solver</span>
+        <div className={styles.providersGrid}>
+          <label className={styles.providerLabel}>
+            <span className={styles.providerLabelText}>Solver</span>
             <select
               value={settings.solverProvider}
               onChange={handleSolverProviderChange}
               disabled={settings.mode === "simple"}
-              className="rounded-12 border border-surface1-hover bg-white px-12 py-8 focus:border-secondary focus:outline-none"
+              className={styles.providerSelect}
             >
               <option value="groq">Groq</option>
               <option value="ollama">Ollama</option>
             </select>
           </label>
-          <label className="flex flex-col gap-4 text-sm">
-            <span className="text-xs text-primary/60">Verifier</span>
+          <label className={styles.providerLabel}>
+            <span className={styles.providerLabelText}>Verifier</span>
             <select
               value={settings.verifierProvider}
               onChange={handleVerifierProviderChange}
               disabled={settings.mode === "simple"}
-              className="rounded-12 border border-surface1-hover bg-white px-12 py-8 focus:border-secondary focus:outline-none"
+              className={styles.providerSelect}
             >
               <option value="groq">Groq</option>
               <option value="ollama">Ollama</option>
@@ -251,12 +220,12 @@ export const MessageInputContainer = () => {
         </div>
       </section>
 
-      <section>
-        <header className="mb-8 text-xs font-semibold uppercase tracking-widest text-primary/60">
+      <section className={styles.section}>
+        <header className={styles.sectionHeader}>
           Детализация
         </header>
-        <div className="space-y-8">
-          <label className="flex items-center gap-8">
+        <div className={styles.detailOptions}>
+          <label className={styles.detailLabel}>
             <input
               type="checkbox"
               checked={settings.showThinking}
@@ -264,7 +233,7 @@ export const MessageInputContainer = () => {
             />
             <span>Показывать мысли агента</span>
           </label>
-          <label className="flex items-center gap-8">
+          <label className={styles.detailLabel}>
             <input
               type="checkbox"
               checked={settings.debug}

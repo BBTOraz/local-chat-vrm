@@ -1,8 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Message } from "@/features/messages/messages";
+import styles from "./chatLog.module.css";
+
 type Props = {
   messages: Message[];
 };
+
 export const ChatLog = ({ messages }: Props) => {
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -19,9 +22,10 @@ export const ChatLog = ({ messages }: Props) => {
       block: "center",
     });
   }, [messages]);
+
   return (
-    <div className="absolute w-col-span-6 max-w-full h-[100svh] pb-64">
-      <div className="max-h-full px-16 pt-104 pb-64 overflow-y-auto scroll-hidden">
+    <div className={styles.chatLogContainer}>
+      <div className={styles.scrollWrapper}>
         {messages.map((msg, i) => {
           return (
             <div key={i} ref={messages.length - 1 === i ? chatScrollRef : null}>
@@ -35,20 +39,17 @@ export const ChatLog = ({ messages }: Props) => {
 };
 
 const Chat = ({ role, message }: { role: string; message: string }) => {
-  const roleColor =
-    role === "assistant" ? "bg-secondary text-white " : "bg-base text-primary";
-  const roleText = role === "assistant" ? "text-secondary" : "text-primary";
-  const offsetX = role === "user" ? "pl-40" : "pr-40";
-
+  const isAssistant = role === "assistant";
+  
   return (
-    <div className={`mx-auto max-w-sm my-16 ${offsetX}`}>
-      <div
-        className={`px-24 py-8 rounded-t-8 font-bold tracking-wider ${roleColor}`}
-      >
-        {role === "assistant" ? "CHARACTER" : "YOU"}
+    <div className={`${styles.chatMessage} ${isAssistant ? styles.chatMessageAssistant : styles.chatMessageUser}`}>
+      <div className={`${styles.messageHeader} ${isAssistant ? styles.messageHeaderAssistant : styles.messageHeaderUser}`}>
+        {isAssistant ? "CHARACTER" : "YOU"}
       </div>
-      <div className="px-24 py-16 bg-white rounded-b-8">
-        <div className={`typography-16 font-bold ${roleText}`}>{message}</div>
+      <div className={styles.messageBody}>
+        <div className={`${styles.messageContent} ${isAssistant ? styles.messageContentAssistant : styles.messageContentUser}`}>
+          {message}
+        </div>
       </div>
     </div>
   );

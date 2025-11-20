@@ -1,0 +1,38 @@
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 12px;
+  background-color: #1B78BD; /* primary - синий ENU */
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 120, 189, 0.2);
+  transition: all 0.2s;
+}
+
+.iconButton:hover:not(:disabled) {
+  background-color: #2589CE; /* primary-hover */
+  box-shadow: 0 4px 12px rgba(27, 120, 189, 0.3);
+}
+
+.iconButton:active:not(:disabled) {
+  background-color: #988BB0;
+}
+
+.iconButton:disabled {
+  background-color: rgba(111, 72, 105, 0.3);
+  cursor: not-allowed;
+}
+
+.withLabel {
+  gap: 4px;
+}
+
+.label {
+  margin: 0 4px;
+  font-weight: 700;
+}

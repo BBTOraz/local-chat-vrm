@@ -1,5 +1,6 @@
 import { useContext, useCallback } from "react";
 import { ViewerContext } from "../features/vrmViewer/viewerContext";
+import styles from "./vrmViewer.module.css";
 
 export default function VrmViewer() {
   const { viewer } = useContext(ViewerContext);
@@ -41,8 +42,8 @@ export default function VrmViewer() {
   );
 
   return (
-    <div className={"absolute top-0 left-0 w-screen h-[100svh] -z-10"}>
-      <canvas ref={canvasRef} className={"h-full w-full"}></canvas>
+    <div className={styles.vrmViewerContainer}>
+      <canvas ref={canvasRef} className={styles.canvas}></canvas>
     </div>
   );
 }

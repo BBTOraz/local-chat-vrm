@@ -1,15 +1,17 @@
 import { useCallback, useState } from "react";
 import { useTranscriptionByGeminiNano } from "./transcriptionByGeminiNano";
 import { useTranscriptionBySpeechRecognition } from "./transcriptionBySpeechRecognition";
+import { useTranscriptionByOpenAI } from "./useTranscriptionByOpenAI";
 
 export const TRANSCRIPTION_ENGINES = [
+  "OpenAI Whisper",
   "Gemini Nano",
   "SpeechSynthesis",
 ] as const;
 
 export type TranscriptionEngine = (typeof TRANSCRIPTION_ENGINES)[number];
 
-export const DEFAULT_TRANSCRIPTION_ENGINE: TranscriptionEngine = "Gemini Nano";
+export const DEFAULT_TRANSCRIPTION_ENGINE: TranscriptionEngine = "OpenAI Whisper";
 
 export const useTranscription = () => {
   const [transcriptionEngine, setTranscriptionEngine] =
@@ -24,21 +26,32 @@ export const useTranscription = () => {
     transcribe: transcribeBySpeechRecognition,
     stopTranscribing: stopTranscribingBySpeechRecognition,
   } = useTranscriptionBySpeechRecognition();
+  const {
+    load: loadOpenAI,
+    transcribe: transcribeByOpenAI,
+    stopTranscribing: stopTranscribingByOpenAI,
+  } = useTranscriptionByOpenAI();
 
   const load = useCallback(
     async (transcriptionEngine: TranscriptionEngine) => {
+      console.log('🔧 [Transcription] Loading engine:', transcriptionEngine);
       setTranscriptionEngine(transcriptionEngine);
       switch (transcriptionEngine) {
+        case "OpenAI Whisper":
+          return await loadOpenAI();
         case "Gemini Nano":
           return await loadGeminiNano();
         default:
       }
     },
-    [loadGeminiNano]
+    [loadOpenAI, loadGeminiNano]
   );
 
   const transcribe = useCallback(async () => {
+    console.log('🎤 [Transcription] Starting transcription with:', transcriptionEngine);
     switch (transcriptionEngine) {
+      case "OpenAI Whisper":
+        return await transcribeByOpenAI();
       case "Gemini Nano":
         return await transcribeByGeminiNano();
       case "SpeechSynthesis":
@@ -47,13 +60,17 @@ export const useTranscription = () => {
         throw Error("Selected transcription engine is not supported");
     }
   }, [
+    transcribeByOpenAI,
     transcribeByGeminiNano,
     transcribeBySpeechRecognition,
     transcriptionEngine,
   ]);
 
   const stopTranscribing = useCallback(() => {
+    console.log('⏹️ [Transcription] Stopping transcription');
     switch (transcriptionEngine) {
+      case "OpenAI Whisper":
+        return stopTranscribingByOpenAI();
       case "Gemini Nano":
         return stopTranscribingByGemini();
       case "SpeechSynthesis":
@@ -62,6 +79,7 @@ export const useTranscription = () => {
         throw Error("Selected transcription engine is not supported");
     }
   }, [
+    stopTranscribingByOpenAI,
     stopTranscribingByGemini,
     stopTranscribingBySpeechRecognition,
     transcriptionEngine,

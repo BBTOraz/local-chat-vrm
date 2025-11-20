@@ -1,5 +1,4 @@
 import { VRMExpressionPresetName } from "@pixiv/three-vrm";
-import { KoeiroParam } from "../constants/koeiroParam";
 
 // ChatGPT API
 export type Message = {
@@ -7,39 +6,19 @@ export type Message = {
   content: string;
 };
 
-export const voiceEngines = ["Kokoro TTS", "Koeiromap"] as const;
+export const voiceEngines = ["OpenAI TTS"] as const;
 
 export type VoiceEngine = (typeof voiceEngines)[number];
 
-export const DEFAULT_VOICE_ENGINE: VoiceEngine = "Kokoro TTS";
+export const DEFAULT_VOICE_ENGINE: VoiceEngine = "OpenAI TTS";
 
-const _koeiromapTalkStyles = [
-  "talk",
-  "happy",
-  "sad",
-  "angry",
-  "fear",
-  "surprised",
-] as const;
-export type KoeiromapTalkStyle = (typeof _koeiromapTalkStyles)[number];
-
-export type KoeiromapTalk = {
-  voiceEngine: "Koeiromap";
-  style: KoeiromapTalkStyle;
-  speakerX: number;
-  speakerY: number;
+export type OpenAITtsTalk = {
+  voiceEngine: "OpenAI TTS";
+  voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer";
   message: string;
 };
 
-const DEFAULT_KOKORO_TTS_VOICE_NAME = "af_heart";
-
-export type KokoroTtsTalk = {
-  voiceEngine: "Kokoro TTS";
-  voiceName: string;
-  message: string;
-};
-
-export type Talk = KoeiromapTalk | KokoroTtsTalk;
+export type Talk = OpenAITtsTalk;
 
 const emotions = ["neutral", "happy", "angry", "sad", "relaxed"] as const;
 type EmotionType = (typeof emotions)[number] & VRMExpressionPresetName;
@@ -59,9 +38,14 @@ export const splitSentence = (text: string): string[] => {
 
 export const textsToScreenplay = (
   voiceEngine: VoiceEngine,
-  texts: string[],
-  koeiroParam: KoeiroParam
+  texts: string[]
 ): Screenplay[] => {
+  console.log("📝 [Screenplay] textsToScreenplay called", {
+    voiceEngine,
+    textsCount: texts.length,
+    texts: texts.map(t => t.substring(0, 30) + "...")
+  });
+  
   const screenplays: Screenplay[] = [];
   let prevExpression = "neutral";
   for (let i = 0; i < texts.length; i++) {
@@ -79,46 +63,16 @@ export const textsToScreenplay = (
       prevExpression = tag;
     }
 
-    switch (voiceEngine) {
-      case "Koeiromap":
-        screenplays.push({
-          expression: expression as EmotionType,
-          talk: {
-            voiceEngine,
-            style: emotionToTalkStyle(expression as EmotionType),
-            speakerX: koeiroParam.speakerX,
-            speakerY: koeiroParam.speakerY,
-            message: message,
-          },
-        });
-        break;
-      case "Kokoro TTS":
-        screenplays.push({
-          expression: expression as EmotionType,
-          talk: {
-            voiceEngine,
-            voiceName: DEFAULT_KOKORO_TTS_VOICE_NAME,
-            message: message,
-          },
-        });
-        break;
-      default:
-        throw Error("Selected voice engine is not supported");
-    }
+    screenplays.push({
+      expression: expression as EmotionType,
+      talk: {
+        voiceEngine,
+        voice: "nova", // Default voice
+        message: message,
+      },
+    });
   }
 
+  console.log("✅ [Screenplay] Generated", screenplays.length, "screenplays");
   return screenplays;
-};
-
-const emotionToTalkStyle = (emotion: EmotionType): KoeiromapTalkStyle => {
-  switch (emotion) {
-    case "angry":
-      return "angry";
-    case "happy":
-      return "happy";
-    case "sad":
-      return "sad";
-    default:
-      return "talk";
-  }
 };

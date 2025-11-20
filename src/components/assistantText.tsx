@@ -1,14 +1,16 @@
+import styles from "./assistantText.module.css";
+
 export const AssistantText = ({ message }: { message: string }) => {
   return (
-    <div className="absolute bottom-0 left-0 mb-104  w-full">
-      <div className="mx-auto max-w-4xl w-full p-16">
-        <div className="bg-white rounded-8">
-          <div className="px-24 py-8 bg-secondary rounded-t-8 text-white font-bold tracking-wider">
+    <div className={styles.container}>
+      <div className={styles.wrapper}>
+        <div className={styles.card}>
+          <div className={styles.header}>
             CHARACTER
           </div>
-          <div className="px-24 py-16">
-            <div className="text-secondary typography-16 font-bold">
-              <div className="line-clamp-4">
+          <div className={styles.content}>
+            <div className={styles.message}>
+              <div>
                 {message.replace(/\[([a-zA-Z]*?)\]/g, "")}
               </div>
             </div>

@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import type { ConversationGroupLabel } from "@/types/chat";
 import { useChatState, useChatDispatch } from "@/state/chatStore";
-import { classNames } from "@/utils/classNames";
 import { formatTimeForDisplay } from "@/utils/datetime";
 import { useChatActions } from "@/hooks/useChatActions";
+import styles from "./Sidebar.module.css";
 
 const GROUP_LABELS: ConversationGroupLabel[] = [
   "Today",
@@ -66,27 +66,22 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={classNames(
-        "fixed left-0 top-0 h-[100svh] bg-surface1 border-r border-surface1-hover transition-[width] duration-300 ease-in-out z-30",
-        widthClass
-      )}
+      className={`${styles.sidebar} ${state.isSidebarCollapsed ? styles.sidebarCollapsed : styles.sidebarExpanded}`}
     >
-      <div className="flex h-full flex-col">
-        <div className="flex items-center gap-8 px-16 py-16">
-          <button
-            type="button"
-            className="rounded-12 bg-secondary px-12 py-8 text-white text-sm font-bold hover:bg-secondary-hover active:bg-secondary-press"
-            onClick={handleCreateConversation}
-            title="Start a new chat"
-          >
-            Новая
-          </button>
+      <div className={styles.sidebarContent}>
+        {/* Заголовок с логотипом и названием */}
+        <div className={styles.header}>
+          <img 
+            src="/enu_bg.png" 
+            alt="ENU Logo" 
+            className={styles.logo}
+          />
           {!state.isSidebarCollapsed && (
-            <div className="text-lg font-bold text-secondary">Orchestra</div>
+            <div className={styles.title}>E.N.U.R.A.</div>
           )}
           <button
             type="button"
-            className="ml-auto rounded-full bg-transparent p-8 text-primary hover:bg-surface1-hover"
+            className={styles.toggleButton}
             aria-label="Toggle sidebar"
             onClick={handleToggleSidebar}
           >
@@ -94,32 +89,53 @@ export const Sidebar = () => {
           </button>
         </div>
 
+        {/* Кнопка "Новая" на отдельной строке */}
+        <div className={styles.newButtonContainer}>
+          <button
+            type="button"
+            className={styles.newButton}
+            onClick={handleCreateConversation}
+            title="Start a new chat"
+          >
+            {state.isSidebarCollapsed ? (
+              <img 
+                src="/enu_bg.png" 
+                alt="New Chat" 
+                className={styles.newButtonIcon}
+              />
+            ) : (
+              "Новая"
+            )}
+          </button>
+        </div>
+
+        {/* Поиск */}
         {!state.isSidebarCollapsed && (
-          <div className="px-16 pb-16">
+          <div className={styles.searchContainer}>
             <input
               type="search"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Поиск..."
-              className="w-full rounded-12 border border-surface1-hover bg-surface0 px-12 py-8 text-sm focus:border-secondary focus:outline-none"
+              className={styles.searchInput}
             />
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-8 pb-16">
+        <div className={styles.conversationsList}>
           {GROUP_LABELS.map((label) => {
             const groupIds = filteredGroupIds[label] ?? [];
             if (groupIds.length === 0) {
               return null;
             }
             return (
-              <div key={label} className="mb-16">
+              <div key={label} className={styles.group}>
                 {!state.isSidebarCollapsed && (
-                  <div className="px-8 pb-8 text-xs font-semibold uppercase tracking-widest text-primary/60">
+                  <div className={styles.groupTitle}>
                     {label}
                   </div>
                 )}
-                <div className="space-y-4">
+                <div>
                   {groupIds.map((id) => {
                     const conversation = state.conversations.find(
                       (entry) => entry.conversationId === id
@@ -137,24 +153,19 @@ export const Sidebar = () => {
                         onClick={() =>
                           handleSelectConversation(conversation.conversationId)
                         }
-                        className={classNames(
-                          "w-full rounded-12 text-left px-12 py-10 transition-colors duration-150",
-                          isActive
-                            ? "bg-secondary text-white"
-                            : "bg-surface0 text-primary hover:bg-surface0-hover"
-                        )}
+                        className={`${styles.conversationItem} ${isActive ? styles.conversationItemActive : ''}`}
                       >
                         {!state.isSidebarCollapsed ? (
-                          <div>
-                            <div className="text-sm font-semibold">
+                          <div className={styles.conversationContent}>
+                            <div className={styles.conversationTitle}>
                               {conversation.title || "Без названия"}
                             </div>
-                            <div className="text-xs text-primary/60">
+                            <div className={styles.conversationTime}>
                               {formatTimeForDisplay(conversation.updatedAt)}
                             </div>
                           </div>
                         ) : (
-                          <span role="img" aria-label="chat">
+                          <span role="img" aria-label="chat" className={styles.conversationIcon}>
                             💬
                           </span>
                         )}
@@ -169,8 +180,10 @@ export const Sidebar = () => {
           {GROUP_LABELS.every(
             (label) => (filteredGroupIds[label]?.length ?? 0) === 0
           ) && (
-            <div className="px-12 py-12 text-sm text-primary/60">
-              История чатов пока пуста.
+            <div className={styles.emptyState}>
+              <p className={styles.emptyStateText}>
+                История чатов пока пуста.
+              </p>
             </div>
           )}
         </div>

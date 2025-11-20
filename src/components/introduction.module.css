@@ -1,0 +1,75 @@
+/* Introduction Styles */
+
+.overlay {
+  position: absolute;
+  z-index: 40;
+  width: 100%;
+  height: 100%;
+  padding: 40px 24px;
+  background-color: rgba(0, 0, 0, 0.3);
+  font-family: 'M_PLUS_2', sans-serif;
+}
+
+.card {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 48rem;
+  max-height: 100%;
+  padding: 24px;
+  overflow: auto;
+  background-color: white;
+  border-radius: 32px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.section {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #FF617F;
+}
+
+.sectionText {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #514062;
+}
+
+.startButton {
+  font-weight: bold;
+  background-color: #FF617F;
+  color: white;
+  padding: 8px 24px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
+}
+
+.startButton:hover:not(:disabled) {
+  background-color: #FF849B;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.startButton:active:not(:disabled) {
+  background-color: #FF9EB1;
+}
+
+.startButton:disabled {
+  background-color: rgba(255, 97, 127, 0.3);
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #514062;
+}

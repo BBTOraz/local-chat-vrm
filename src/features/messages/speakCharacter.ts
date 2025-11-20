@@ -1,13 +1,11 @@
 import { wait } from "@/utils/wait";
-import { synthesizeVoiceApi } from "../voices/koeiromapSynthesizeVoice";
 import { Viewer } from "../vrmViewer/viewer";
 import {
-  KoeiromapTalk,
-  KokoroTtsTalk,
+  OpenAITtsTalk,
   Screenplay,
   VoiceEngine,
 } from "./messages";
-import { kokoroTts } from "../voices/kokoroTts";
+import { synthesizeSpeechOpenAI } from "../voices/openaiTts";
 
 const createSpeakCharacter = () => {
   let lastTime = 0;
@@ -23,8 +21,14 @@ const createSpeakCharacter = () => {
     onStart?: () => void,
     onComplete?: () => void
   ) => {
+    console.log("⏳ [TTS] continuousFetchAudio called", {
+      fetchInterval,
+      stopRequested
+    });
+    
     const fetchPromise = prevFetchPromise.then(async () => {
       if (stopRequested) {
+        console.warn("⚠️ [TTS] Fetch cancelled - stop requested");
         return null;
       }
 
@@ -33,8 +37,17 @@ const createSpeakCharacter = () => {
         await wait(fetchInterval - (now - lastTime));
       }
 
-      const buffer = await fetchAudio().catch(() => null);
+      console.log("📡 [TTS] Fetching audio...");
+      const buffer = await fetchAudio().catch((err) => {
+        console.error("❌ [TTS] Fetch audio failed:", err);
+        return null;
+      });
       lastTime = Date.now();
+      
+      if (buffer) {
+        console.log("✅ [TTS] Audio fetched successfully:", buffer.byteLength, "bytes");
+      }
+      
       return buffer;
     });
 
@@ -42,47 +55,54 @@ const createSpeakCharacter = () => {
     prevSpeakPromise = Promise.all([fetchPromise, prevSpeakPromise])
       .then(async ([audioBuffer]) => {
         if (stopRequested || !audioBuffer) {
+          console.warn("⚠️ [TTS] Playback cancelled", { stopRequested, hasBuffer: !!audioBuffer });
           return;
         }
+        
+        console.log("🎵 [TTS] Starting audio playback...");
         onStart?.();
         await viewer.model?.speak(audioBuffer, screenplay);
+        console.log("✅ [TTS] Audio playback finished");
       })
       .finally(() => {
+        console.log("🏁 [TTS] Finally block - calling onComplete");
         onComplete?.();
       });
   };
 
-  const getFunctionToFetchKoeiromapAudio =
-    (talk: KoeiromapTalk, apiKey: string) => async (): Promise<ArrayBuffer> => {
-      const ttsVoice = await synthesizeVoiceApi(
-        talk.message,
-        talk.speakerX,
-        talk.speakerY,
-        talk.style,
-        apiKey
-      );
-      const url = ttsVoice.audio;
-
-      if (url == null) {
-        throw new Error("Something went wrong");
+  const getFunctionToFetchOpenAITtsAudio =
+    (talk: OpenAITtsTalk) => async (): Promise<ArrayBuffer> => {
+      console.log("🎤 [OpenAI TTS] Starting synthesis...", {
+        message: talk.message.substring(0, 50) + "...",
+        voice: talk.voice,
+        model: 'tts-1'
+      });
+      
+      try {
+        const audioBlob = await synthesizeSpeechOpenAI(talk.message, {
+          model: 'tts-1', // Быстрая модель для real-time
+          voice: talk.voice,
+          speed: 1.0,
+        });
+        
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        console.log("✅ [OpenAI TTS] Synthesis successful!", {
+          audioSize: arrayBuffer.byteLength,
+          duration: `~${(arrayBuffer.byteLength / 24000).toFixed(1)}s`
+        });
+        
+        return arrayBuffer;
+      } catch (error) {
+        console.error("❌ [OpenAI TTS] Synthesis failed:", error);
+        throw error;
       }
-
-      const resAudio = await fetch(url);
-      const buffer = await resAudio.arrayBuffer();
-      return buffer;
-    };
-
-  const getFunctionToFetchKokoroTtsAudio =
-    (talk: KokoroTtsTalk) => async (): Promise<ArrayBuffer> => {
-      return await kokoroTts.generate(talk);
     };
 
   const load = async (voiceEngine: VoiceEngine): Promise<void> => {
-    if (voiceEngine !== "Kokoro TTS") {
-      return;
-    }
-
-    await kokoroTts.load();
+    console.log("🔧 [TTS] Loading voice engine:", voiceEngine);
+    // OpenAI TTS doesn't require pre-loading
+    console.log("✅ [TTS] Voice engine loaded (no pre-loading needed for OpenAI)");
+    return;
   };
 
   const speak = (
@@ -92,33 +112,29 @@ const createSpeakCharacter = () => {
     onStart?: () => void,
     onComplete?: () => void
   ) => {
+    console.log("🗣️ [TTS] speak() called", {
+      voiceEngine: screenplay.talk.voiceEngine,
+      expression: screenplay.expression,
+      messagePreview: screenplay.talk.message.substring(0, 50) + "..."
+    });
+    
     stopRequested = false;
 
     const talk = screenplay.talk;
-    switch (talk.voiceEngine) {
-      case "Koeiromap":
-        continuousFetchAudio(
-          screenplay,
-          viewer,
-          1000,
-          getFunctionToFetchKoeiromapAudio(talk, koeiroApiKey),
-          onStart,
-          onComplete
-        );
-        break;
-      case "Kokoro TTS":
-        continuousFetchAudio(
-          screenplay,
-          viewer,
-          0,
-          getFunctionToFetchKokoroTtsAudio(talk),
-          onStart,
-          onComplete
-        );
-        break;
-      default:
-        throw Error("Selected voice engine is not supported");
-    }
+    continuousFetchAudio(
+      screenplay,
+      viewer,
+      0,
+      getFunctionToFetchOpenAITtsAudio(talk),
+      () => {
+        console.log("🎵 [TTS] Audio playback started");
+        onStart?.();
+      },
+      () => {
+        console.log("✅ [TTS] Audio playback completed");
+        onComplete?.();
+      }
+    );
   };
 
   const stop = (viewer: Viewer) => {

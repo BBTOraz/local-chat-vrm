@@ -11,6 +11,7 @@ import {
 } from "@/features/constants/koeiroParam";
 import { Link } from "./link";
 import { ChatEngine } from "@/features/chat/chat";
+import styles from "./settings.module.css";
 
 const CHARACTER_SETTINGS_DISABLED = import.meta.env
   .VITE_CHARACTER_SETTINGS_DISABLED;
@@ -62,8 +63,8 @@ export const Settings = ({
   }, [onClickClose, onLoad]);
 
   return (
-    <div className="absolute z-40 w-full h-full bg-white/80 backdrop-blur ">
-      <div className="absolute m-24">
+    <div className={styles.overlay}>
+      <div className={styles.closeButton}>
         <IconButton
           iconName="24/Close"
           isProcessing={false}
@@ -71,10 +72,10 @@ export const Settings = ({
           disabled={isLoading}
         ></IconButton>
       </div>
-      <div className="max-h-full overflow-auto">
-        <div className="text-text1 max-w-3xl mx-auto px-24 py-64 ">
-          <div className="my-24 typography-32 font-bold">Overview</div>
-          <div className="my-16 typography-20 font-bold">About VRoid</div>
+      <div className={styles.scrollContainer}>
+        <div className={styles.content}>
+          <div className={styles.sectionTitle}>Overview</div>
+          <div className={styles.subsectionTitle}>About VRoid</div>
           <div>
             <p>The 3D model used in this demo was created with VRoid.</p>
             <p>
@@ -89,8 +90,8 @@ export const Settings = ({
             </p>
             <Link url="https://vroid.com/en" label="Learn more" />
           </div>
-          <div className="my-16 typography-20 font-bold">About Repository</div>
-          <div className="my-16 font-bold">
+          <div className={styles.subsectionTitle}>About Repository</div>
+          <div className={styles.paragraph}>
             {CHARACTER_SETTINGS_DISABLED && (
               <p>
                 In this demo, editing the Settings is disabled. To use a fully
@@ -107,42 +108,13 @@ export const Settings = ({
               height={80}
               width={80}
               src={"./github-qr.svg"}
-              className="my-16"
+              className={styles.qrCode}
             />
           </div>
-          <div className="my-24 typography-32 font-bold">Settings</div>
-          {chatEngine === "OpenAI" && (
-            <div className="my-24">
-              <div className="my-16 typography-20 font-bold">
-                OpenAI API Key
-              </div>
-              <input
-                className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
-                type="text"
-                placeholder="sk-..."
-                value={openAiKey}
-                onChange={onChangeAiKey}
-                disabled={isLoading}
-              />
-              <div>
-                You can create your API key on
-                <Link
-                  url="https://platform.openai.com/account/api-keys"
-                  label="the OpenAI website"
-                />
-                . Please enter the created API key in the form below.
-              </div>
-              <div className="my-16">
-                ChatGPT The API is accessed directly from your browser.
-                Additionally, your API key and conversation content are not
-                stored on pixiv&#39;s servers.
-                <br />* The model currently in use is the ChatGPT API (GPT-3.5).
-              </div>
-            </div>
-          )}
-          <div className="my-40">
-            <div className="my-16 typography-20 font-bold">3D model</div>
-            <div className="my-8">
+          <div className={styles.sectionTitle}>Settings</div>
+          <div className={styles.sectionBlock}>
+            <div className={styles.subsectionTitle}>3D model</div>
+            <div className={styles.paragraph}>
               <TextButton
                 onClick={onClickOpenVrmFile}
                 disabled={CHARACTER_SETTINGS_DISABLED}
@@ -151,9 +123,9 @@ export const Settings = ({
               </TextButton>
             </div>
           </div>
-          <div className="my-40">
-            <div className="my-8">
-              <div className="my-16 typography-20 font-bold">
+          <div className={styles.sectionBlock}>
+            <div className={styles.paragraph}>
+              <div className={styles.subsectionTitle}>
                 Character Settings (System Prompt)
               </div>
               <TextButton
@@ -167,122 +139,30 @@ export const Settings = ({
             <textarea
               value={systemPrompt}
               onChange={onChangeSystemPrompt}
-              className="px-16 py-8  bg-surface1 hover:bg-surface1-hover h-168 rounded-8 w-full"
+              className={styles.textarea}
               disabled={CHARACTER_SETTINGS_DISABLED || isLoading}
             ></textarea>
           </div>
-          {voiceEngine === "Koeiromap" && (
-            <div className="my-40">
-              <div className="my-16 typography-20 font-bold">
-                Voice Adjustment
-              </div>
-              <div>
-                This application uses the Koeiromap API provided by Koemotion.
-                For details, please visit
-                <Link
-                  url="https://koemotion.rinna.co.jp"
-                  label="https://koemotion.rinna.co.jp"
-                />
-              </div>
-              <div className="mt-16 font-bold">API Key</div>
-              <div className="mt-8">
-                <input
-                  className="text-ellipsis px-16 py-8 w-col-span-2 bg-surface1 hover:bg-surface1-hover rounded-8"
-                  type="text"
-                  placeholder="..."
-                  value={koeiromapKey}
-                  onChange={onChangeKoeiromapKey}
-                />
-              </div>
-
-              <div className="mt-16 font-bold">Presets</div>
-              <div className="my-8 grid grid-cols-2 gap-[8px]">
-                <TextButton
-                  onClick={() =>
-                    onChangeKoeiroParam(PRESET_A.speakerX, PRESET_A.speakerY)
-                  }
-                >
-                  Cute
-                </TextButton>
-                <TextButton
-                  onClick={() =>
-                    onChangeKoeiroParam(PRESET_B.speakerX, PRESET_B.speakerY)
-                  }
-                >
-                  Energetic
-                </TextButton>
-                <TextButton
-                  onClick={() =>
-                    onChangeKoeiroParam(PRESET_C.speakerX, PRESET_C.speakerY)
-                  }
-                >
-                  Cool
-                </TextButton>
-                <TextButton
-                  onClick={() =>
-                    onChangeKoeiroParam(PRESET_D.speakerX, PRESET_D.speakerY)
-                  }
-                >
-                  Deep
-                </TextButton>
-              </div>
-              <div className="my-24">
-                <div className="select-none">x : {koeiroParam.speakerX}</div>
-                <input
-                  type="range"
-                  min={-10}
-                  max={10}
-                  step={0.001}
-                  value={koeiroParam.speakerX}
-                  className="mt-8 mb-16 input-range"
-                  onChange={(e) => {
-                    onChangeKoeiroParam(
-                      Number(e.target.value),
-                      koeiroParam.speakerY
-                    );
-                  }}
-                ></input>
-                <div className="select-none">y : {koeiroParam.speakerY}</div>
-                <input
-                  type="range"
-                  min={-10}
-                  max={10}
-                  step={0.001}
-                  value={koeiroParam.speakerY}
-                  className="mt-8 mb-16 input-range"
-                  onChange={(e) => {
-                    onChangeKoeiroParam(
-                      koeiroParam.speakerX,
-                      Number(e.target.value)
-                    );
-                  }}
-                ></input>
-              </div>
-            </div>
-          )}
           {chatLog.length > 0 && (
-            <div className="my-40">
-              <div className="my-8 grid-cols-2">
-                <div className="my-16 typography-20 font-bold">
+            <div className={styles.sectionBlock}>
+              <div>
+                <div className={styles.subsectionTitle}>
                   Chat History
                 </div>
                 <TextButton onClick={onClickResetChatLog}>
                   Reset Chat History
                 </TextButton>
               </div>
-              <div className="my-8">
+              <div className={styles.paragraph}>
                 {chatLog.map((value, index) => {
                   return (
-                    <div
-                      key={index}
-                      className="my-8 grid grid-flow-col  grid-cols-[min-content_1fr] gap-x-fixed"
-                    >
-                      <div className="w-[64px] py-8">
+                    <div key={index} className={styles.chatHistoryItem}>
+                      <div className={styles.chatHistoryRole}>
                         {value.role === "assistant" ? "Character" : "You"}
                       </div>
                       <input
                         key={index}
-                        className="bg-surface1 hover:bg-surface1-hover rounded-8 w-full px-16 py-8"
+                        className={styles.chatHistoryInput}
                         type="text"
                         value={value.content}
                         onChange={(event) => {

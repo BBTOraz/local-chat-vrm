@@ -93,8 +93,8 @@ export class Viewer {
 
     // camera
     this._camera = new THREE.PerspectiveCamera(20.0, width / height, 0.1, 20.0);
-    this._camera.position.set(0, 1.3, 1.5);
-    this._cameraControls?.target.set(0, 1.3, 0);
+    this._camera.position.set(0, 1.3, 1.5); // Камера остается в центре
+    this._cameraControls?.target.set(1.2, 1.3, 0); // Target смещен вправо -> модель правее
     this._cameraControls?.update();
     // camera controls
     this._cameraControls = new OrbitControls(

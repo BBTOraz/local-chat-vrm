@@ -1,0 +1,240 @@
+/* MessageInput Styles */
+
+.container {
+  pointer-events: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+}
+
+.wrapper {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 56rem;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+}
+
+.inputCard {
+  pointer-events: auto;
+  position: relative;
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+}
+
+.extendedPanel {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.textarea {
+  width: 100%;
+  resize: none;
+  border-radius: 24px 24px 0 0;
+  border: 0;
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #514062;
+  outline: none;
+}
+
+.textarea::placeholder {
+  color: rgba(81, 64, 98, 0.4);
+}
+
+.controlsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 16px;
+}
+
+.leftControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rightControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attachButton {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  color: rgba(81, 64, 98, 0.7);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.attachButton:hover:not(:disabled) {
+  background-color: #e8e8e8;
+}
+
+.attachButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.extendedButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background-color: #f5f5f5;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #514062;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.extendedButton:hover {
+  background-color: #e8e8e8;
+}
+
+.arrow {
+  transition: transform 0.2s;
+}
+
+.arrowRotated {
+  transform: rotate(180deg);
+}
+
+.voiceButton {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.voiceButtonIdle {
+  background-color: #F5F9FC; /* base-secondary - светло-голубой фон */
+  color: #1B78BD; /* primary - синий ENU */
+}
+
+.voiceButtonIdle:hover {
+  background-color: #6FBEF7; /* secondary - светло-голубой */
+  color: white;
+}
+
+.voiceButtonActive {
+  background-color: #1B78BD; /* primary - синий ENU */
+  color: white;
+  box-shadow: 0 2px 8px rgba(27, 120, 189, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(27, 120, 189, 0.3); }
+  50% { box-shadow: 0 4px 16px rgba(27, 120, 189, 0.5); }
+}
+
+.stopButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background-color: #165F9A; /* primary-press - темно-синий */
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(27, 120, 189, 0.2);
+  transition: all 0.2s;
+}
+
+.stopButton:hover {
+  background-color: #1B78BD; /* primary */
+  box-shadow: 0 4px 12px rgba(27, 120, 189, 0.3);
+}
+
+.submitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 48px;
+}
+
+.submitButtonActive {
+  background-color: #1B78BD; /* primary - синий ENU */
+  color: white;
+  box-shadow: 0 2px 8px rgba(27, 120, 189, 0.2);
+}
+
+.submitButtonActive:hover {
+  background-color: #2589CE; /* primary-hover */
+  box-shadow: 0 4px 16px rgba(27, 120, 189, 0.3);
+  transform: translateY(-2px);
+}
+
+.submitButtonActive:active {
+  background-color: #165F9A; /* primary-press */
+  transform: translateY(0);
+}
+
+.submitButtonDisabled {
+  background-color: rgba(27, 120, 189, 0.3); /* primary с прозрачностью */
+  color: rgba(255, 255, 255, 0.7);
+  cursor: not-allowed;
+}

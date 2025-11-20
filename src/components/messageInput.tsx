@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { classNames } from "@/utils/classNames";
+import styles from "./messageInput.module.css";
 
 type Props = {
   userMessage: string;
@@ -62,16 +62,16 @@ export const MessageInput = ({
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-40">
-      <div className="mx-auto w-full max-w-4xl px-24 pb-24">
-        <div className="pointer-events-auto relative rounded-24 border border-surface1-hover bg-white shadow-[0_-6px_30px_rgba(0,0,0,0.08)]">
+    <div className={styles.container}>
+      <div className={styles.wrapper}>
+        <div className={styles.inputCard}>
           {isExtendedOpen && (
-            <div className="absolute bottom-full left-0 right-0 mb-12 rounded-20 border border-surface1-hover bg-white p-20 shadow-xl">
+            <div className={styles.extendedPanel}>
               {children}
             </div>
           )}
           <form onSubmit={handleSubmit}>
-            <label className="sr-only" htmlFor="chat-textarea">
+            <label className={styles.srOnly} htmlFor="chat-textarea">
               Введите сообщение
             </label>
             <textarea
@@ -82,14 +82,14 @@ export const MessageInput = ({
               onKeyDown={handleKeyDown}
               placeholder="Спросите что-нибудь..."
               rows={1}
-              className="w-full resize-none rounded-t-24 border-0 px-24 pt-20 text-base font-medium text-primary placeholder:text-primary/40 focus:outline-none"
+              className={styles.textarea}
             />
           </form>
-          <div className="flex items-center justify-between gap-12 px-20 pb-16">
-            <div className="flex items-center gap-8">
+          <div className={styles.controlsBar}>
+            <div className={styles.leftControls}>
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-surface0 text-primary/70 hover:bg-surface0-hover"
+                className={styles.attachButton}
                 title="Прикрепить файл (скоро)"
                 aria-label="Прикрепить файл"
                 disabled
@@ -99,59 +99,69 @@ export const MessageInput = ({
               <button
                 type="button"
                 onClick={onToggleExtended}
-                className="flex items-center gap-2 rounded-16 bg-surface0 px-12 py-6 text-sm font-semibold text-primary hover:bg-surface0-hover"
+                className={styles.extendedButton}
                 aria-expanded={isExtendedOpen}
               >
                 Дополнительно
                 <span
                   aria-hidden="true"
-                  className={classNames(
-                    "transition-transform",
-                    isExtendedOpen ? "rotate-180" : ""
-                  )}
+                  className={`${styles.arrow} ${isExtendedOpen ? styles.arrowRotated : ''}`}
                 >
                   ▼
                 </span>
               </button>
             </div>
-            <div className="flex items-center gap-8">
+            <div className={styles.rightControls}>
               {isVoiceSupported && (
                 <button
                   type="button"
                   onClick={onVoiceInputClick}
-                  className={classNames(
-                    "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors",
-                    isListening
-                      ? "bg-secondary text-white"
-                      : "bg-surface0 text-primary hover:bg-surface0-hover"
-                  )}
+                  className={`${styles.voiceButton} ${isListening ? styles.voiceButtonActive : styles.voiceButtonIdle}`}
                   aria-pressed={isListening}
                   aria-label="Голосовой ввод"
+                  title="Голосовой ввод"
                 >
-                  🎤
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
                 </button>
               )}
               {isVoiceActive && (
                 <button
                   type="button"
                   onClick={onStopSpeech}
-                  className="flex items-center gap-2 rounded-16 bg-secondary px-12 py-6 text-sm font-semibold text-white hover:bg-secondary-hover"
+                  className={styles.stopButton}
+                  title="Остановить воспроизведение"
                 >
-                  🔇 Остановить
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                    <line x1="23" y1="9" x2="17" y2="15"/>
+                    <line x1="17" y1="9" x2="23" y2="15"/>
+                  </svg>
+                  <span>Остановить</span>
                 </button>
               )}
               <button
                 type="button"
                 onClick={onSubmit}
                 disabled={isChatProcessing || !userMessage.trim()}
-                className={classNames(
-                  "flex items-center gap-2 rounded-16 px-16 py-8 text-sm font-semibold transition-colors",
-                  isChatProcessing || !userMessage.trim()
-                    ? "bg-secondary-disabled text-white/60"
-                    : "bg-secondary text-white hover:bg-secondary-hover"
-                )}
+                className={`${styles.submitButton} ${isChatProcessing || !userMessage.trim() ? styles.submitButtonDisabled : styles.submitButtonActive}`}
+                title={isChatProcessing ? "Отправка..." : "Отправить сообщение"}
               >
-                {isChatProcessing ? "..." : "Отправить"}
+                {isChatProcessing ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                  </svg>
+                )}
               </button>
             </div>
           </div>
