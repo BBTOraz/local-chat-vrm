@@ -5,12 +5,17 @@ import { DEFAULT_VOICE_ENGINE, textsToScreenplay } from "@/features/messages/mes
 import { speakCharacter } from "@/features/messages/speakCharacter";
 
 export const SummarySpeaker = () => {
-  const { agentRun } = useChatState();
+  const { agentRun, isContinuousVoiceMode } = useChatState();
   const dispatch = useChatDispatch();
   const { viewer } = useContext(ViewerContext);
   const lastSpokenRef = useRef<string | null>(null);
 
   useEffect(() => {
+    // Skip TTS when streaming voice mode is active — StreamingTtsQueue handles it
+    if (isContinuousVoiceMode) {
+      return;
+    }
+
     const summary = agentRun?.summaryForSpeech?.trim() ?? "";
     if (!summary || !agentRun?.finishedAt) {
       return;
@@ -88,7 +93,7 @@ export const SummarySpeaker = () => {
       cancelled = true;
       dispatch({ type: "SET_VOICE_ACTIVE", active: false });
     };
-  }, [agentRun?.finishedAt, agentRun?.summaryForSpeech, dispatch, viewer]);
+  }, [agentRun?.finishedAt, agentRun?.summaryForSpeech, dispatch, isContinuousVoiceMode, viewer]);
 
   return null;
 };

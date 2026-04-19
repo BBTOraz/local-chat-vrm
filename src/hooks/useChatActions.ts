@@ -10,6 +10,8 @@ import { useChatDispatch, useChatState } from "@/state/chatStore";
 import { generateId } from "@/utils/id";
 import { streamAgentEvents, AgentStreamController } from "@/utils/sse";
 import { buildApiUrl } from "@/utils/config";
+import { StreamingTtsQueue } from "@/features/tts/StreamingTtsQueue";
+import { synthesizeSpeechOpenAI } from "@/features/voices/openaiTts";
 
 type TitleResponse = string;
 
@@ -127,6 +129,19 @@ export const useChatActions = () => {
   const pendingTitleMessageRef = useRef<string | null>(null);
   const messageQueueRef = useRef<PendingMessage[]>([]);
   const isProcessingQueueRef = useRef(false);
+
+  /**
+   * Streaming TTS queue — created fresh for each sendAgentMessage call.
+   * External callers (e.g. VoiceModeController) can read this ref to wire
+   * onFirstChunkStart / get queue state.
+   */
+  const streamingTtsQueueRef = useRef<StreamingTtsQueue | null>(null);
+
+  /**
+   * Mutable callback that plays one ArrayBuffer chunk via the VRM viewer.
+   * Populated by VoiceModeController (which has viewer access) after mount.
+   */
+  const onSpeakChunkRef = useRef<((audio: ArrayBuffer) => Promise<void>) | null>(null);
 
   useEffect(() => {
     agentRunRef.current = state.agentRun;
@@ -290,6 +305,10 @@ export const useChatActions = () => {
             iteration.solver.lastUpdatedAt = Date.now();
             return run;
           });
+          // Feed token into streaming TTS queue when voice mode is active
+          if (state.isContinuousVoiceMode && streamingTtsQueueRef.current) {
+            streamingTtsQueueRef.current.pushToken(token);
+          }
           break;
         }
         case "DRAFT_READY": {
@@ -392,6 +411,7 @@ export const useChatActions = () => {
           break;
         }
         case "VERIFICATION_FEEDBACK": {
+          let verificationRejected = false;
           updateAgentRun((run) => {
             const iteration = run.iterations.at(-1);
             if (!iteration) {
@@ -417,10 +437,16 @@ export const useChatActions = () => {
               }
               iteration.verifier.message =
                 data.message ?? "Необходимо улучшить черновик.";
+              verificationRejected = true;
             }
             iteration.verifier.lastUpdatedAt = Date.now();
             return run;
           });
+          // Cancel streaming TTS if the verifier rejected this draft
+          if (verificationRejected && streamingTtsQueueRef.current) {
+            streamingTtsQueueRef.current.cancel();
+            streamingTtsQueueRef.current = null;
+          }
           break;
         }
         case "FINAL_ANSWER": {
@@ -444,6 +470,10 @@ export const useChatActions = () => {
               String((event.data as Record<string, unknown>).answer ?? "")
             );
           }
+          // Flush remaining buffered text into TTS
+          if (streamingTtsQueueRef.current) {
+            streamingTtsQueueRef.current.endStream();
+          }
           dispatch({ type: "SET_LOADING", value: false });
           void refreshConversations();
           break;
@@ -466,7 +496,7 @@ export const useChatActions = () => {
           break;
       }
     },
-    [appendAssistantMessage, dispatch, refreshConversations, updateAgentRun]
+    [appendAssistantMessage, dispatch, refreshConversations, state.isContinuousVoiceMode, updateAgentRun]
   );
 
   const requestConversationTitle = useCallback(
@@ -538,6 +568,50 @@ export const useChatActions = () => {
         streamControllerRef.current.abort();
       }
 
+      // Cancel any previous queue before starting a new one
+      if (streamingTtsQueueRef.current) {
+        streamingTtsQueueRef.current.cancel();
+        streamingTtsQueueRef.current = null;
+      }
+
+      // Create a fresh StreamingTtsQueue for this agent run if voice mode is active
+      if (state.isContinuousVoiceMode) {
+        streamingTtsQueueRef.current = new StreamingTtsQueue({
+          synthesize: async (text: string): Promise<ArrayBuffer> => {
+            const blob = await synthesizeSpeechOpenAI(text, { model: "tts-1", voice: "nova" });
+            return blob.arrayBuffer();
+          },
+          onSpeakChunk: async (audio: ArrayBuffer): Promise<void> => {
+            const speakFn = onSpeakChunkRef.current;
+            if (speakFn) {
+              await speakFn(audio);
+            } else {
+              // Fallback: plain HTML Audio playback when viewer callback not set
+              const blob = new Blob([audio], { type: "audio/mpeg" });
+              const url = URL.createObjectURL(blob);
+              const audioEl = new Audio(url);
+              await new Promise<void>((resolve) => {
+                audioEl.addEventListener("ended", () => {
+                  URL.revokeObjectURL(url);
+                  resolve();
+                });
+                audioEl.addEventListener("error", () => {
+                  URL.revokeObjectURL(url);
+                  resolve();
+                });
+                void audioEl.play().catch(() => resolve());
+              });
+            }
+          },
+          onFirstChunkStart: () => {
+            console.log("[StreamingTtsQueue] First chunk started");
+          },
+          onComplete: () => {
+            console.log("[StreamingTtsQueue] All chunks played");
+          },
+        });
+      }
+
       const body = {
         message,
         solverProvider: state.settings.solverProvider,
@@ -586,7 +660,7 @@ export const useChatActions = () => {
         },
       });
     },
-    [dispatch, handleAgentEvent, state.settings, updateAgentRun]
+    [dispatch, handleAgentEvent, state.settings, state.isContinuousVoiceMode, updateAgentRun]
   );
 
   const sendAgentMessageRef = useRef<typeof sendAgentMessage>(sendAgentMessage);
@@ -722,5 +796,7 @@ export const useChatActions = () => {
     sendMessage,
     abortCurrentStream,
     getStreamController,
+    streamingTtsQueueRef,
+    onSpeakChunkRef,
   };
 };
