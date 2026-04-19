@@ -105,6 +105,9 @@ export const VoiceModeController = () => {
           handleSpeechEnd();
         }
       };
+      return () => {
+        speakCharacter.stop = originalStop;
+      };
     }
   }, [isContinuousVoiceMode, voiceAgent, viewer]);
 
