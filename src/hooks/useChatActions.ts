@@ -327,7 +327,8 @@ export const useChatActions = () => {
           // sendAgentMessage already creates it for the first iteration, but if the
           // verifier cancels the queue and the agent retries, a new SOLVER_STARTED
           // fires without a new sendAgentMessage call — so the queue would be null.
-          if (state.isContinuousVoiceMode && !streamingTtsQueueRef.current) {
+          if (state.isContinuousVoiceMode) {
+            streamingTtsQueueRef.current?.cancel();  // no-op if null
             streamingTtsQueueRef.current = createTtsQueue();
           }
           break;

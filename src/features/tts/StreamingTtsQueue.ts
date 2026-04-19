@@ -66,7 +66,7 @@ function detectBoundary(
       const isAtEnd = i === buffer.length - 1;
       const nextIsSpace = i + 1 < buffer.length && buffer[i + 1] === " ";
       if (isAtEnd || nextIsSpace) {
-        const sentence = buffer.slice(0, i + 1).trim();
+        const sentence = buffer.slice(searchStart, i + 1).trim();
         const remainder = buffer.slice(i + (nextIsSpace ? 2 : 1));
         if (sentence.length >= MIN_SENTENCE_LENGTH) {
           return { sentence, remainder };
