@@ -15,6 +15,7 @@ import {
   streamingTtsQueueRef,
   onSpeakChunkRef,
   voiceAgentCallbackRef,
+  voiceAgentStartCallbackRef,
 } from "@/features/tts/ttsShared";
 import { synthesizeSpeechOpenAI } from "@/features/voices/openaiTts";
 
@@ -303,6 +304,9 @@ export const useChatActions = () => {
       },
       onFirstChunkStart: () => {
         console.log("[StreamingTtsQueue] First chunk started");
+        // Transition the voice agent state machine to speaking now that
+        // audio is actually playing, rather than on FINAL_ANSWER receipt.
+        voiceAgentStartCallbackRef.current?.();
       },
       onComplete: () => {
         console.log("[StreamingTtsQueue] All chunks played");

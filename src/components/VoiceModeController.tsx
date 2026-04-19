@@ -8,10 +8,11 @@ import { DEFAULT_VOICE_ENGINE, textsToScreenplay } from "@/features/messages/mes
 import {
   onSpeakChunkRef,
   voiceAgentCallbackRef,
+  voiceAgentStartCallbackRef,
 } from "@/features/tts/ttsShared";
 
 export const VoiceModeController = () => {
-  const { isContinuousVoiceMode, agentRun } = useChatState();
+  const { isContinuousVoiceMode } = useChatState();
   const dispatch = useChatDispatch();
   const { sendMessage, abortCurrentStream } = useChatActions();
   const { viewer } = useContext(ViewerContext);
@@ -71,6 +72,16 @@ export const VoiceModeController = () => {
     };
   }, [voiceAgent.notifyResponseFinished]);
 
+  // Keep voiceAgentStartCallbackRef pointed at the current notifyResponseStarted
+  // so the TTS queue's onFirstChunkStart transitions the state machine to
+  // speaking at the moment audio actually begins (not on FINAL_ANSWER receipt).
+  useEffect(() => {
+    voiceAgentStartCallbackRef.current = voiceAgent.notifyResponseStarted;
+    return () => {
+      voiceAgentStartCallbackRef.current = null;
+    };
+  }, [voiceAgent.notifyResponseStarted]);
+
   useEffect(() => {
     if (isContinuousVoiceMode && !voiceAgent.isActive) {
       voiceAgent.init();
@@ -78,14 +89,6 @@ export const VoiceModeController = () => {
       voiceAgent.stop();
     }
   }, [isContinuousVoiceMode, voiceAgent]);
-
-  useEffect(() => {
-    if (!isContinuousVoiceMode || !voiceAgent.isActive) return;
-
-    if (agentRun?.summaryForSpeech && agentRun?.finishedAt) {
-      voiceAgent.notifyResponseStarted();
-    }
-  }, [isContinuousVoiceMode, voiceAgent, agentRun?.summaryForSpeech, agentRun?.finishedAt]);
 
   useEffect(() => {
     if (!isContinuousVoiceMode || !voiceAgent.isActive) return;

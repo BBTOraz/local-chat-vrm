@@ -30,3 +30,13 @@ export const onSpeakChunkRef: {
 export const voiceAgentCallbackRef: { current: (() => void) | null } = {
   current: null,
 };
+
+/**
+ * Called when the first TTS audio chunk starts playing.
+ * Populated by VoiceModeController so the voice agent state machine
+ * transitions to the speaking state at the correct moment (actual audio
+ * start) rather than on FINAL_ANSWER receipt.
+ */
+export const voiceAgentStartCallbackRef: { current: (() => void) | null } = {
+  current: null,
+};
