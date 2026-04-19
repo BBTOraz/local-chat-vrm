@@ -5,11 +5,15 @@ import { useIntegratedVoiceAgent } from "@/features/voiceAgent/useIntegratedVoic
 import { ViewerContext } from "@/features/vrmViewer/viewerContext";
 import { speakCharacter } from "@/features/messages/speakCharacter";
 import { DEFAULT_VOICE_ENGINE, textsToScreenplay } from "@/features/messages/messages";
+import {
+  onSpeakChunkRef,
+  voiceAgentCallbackRef,
+} from "@/features/tts/ttsShared";
 
 export const VoiceModeController = () => {
   const { isContinuousVoiceMode, agentRun } = useChatState();
   const dispatch = useChatDispatch();
-  const { sendMessage, abortCurrentStream, onSpeakChunkRef } = useChatActions();
+  const { sendMessage, abortCurrentStream } = useChatActions();
   const { viewer } = useContext(ViewerContext);
 
   const voiceAgent = useIntegratedVoiceAgent(
@@ -35,7 +39,7 @@ export const VoiceModeController = () => {
     abortCurrentStream
   );
 
-  // Wire the viewer-aware audio playback callback into the TTS queue ref.
+  // Wire the viewer-aware audio playback callback into the shared TTS singleton.
   // This runs whenever viewer becomes ready so the queue always has access to it.
   useEffect(() => {
     if (!viewer) {
@@ -56,7 +60,16 @@ export const VoiceModeController = () => {
         }
       });
     };
-  }, [viewer, onSpeakChunkRef]);
+  }, [viewer]);
+
+  // Keep voiceAgentCallbackRef pointed at the current notifyResponseFinished so
+  // the TTS queue's onComplete can advance the voice agent state machine.
+  useEffect(() => {
+    voiceAgentCallbackRef.current = voiceAgent.notifyResponseFinished;
+    return () => {
+      voiceAgentCallbackRef.current = null;
+    };
+  }, [voiceAgent.notifyResponseFinished]);
 
   useEffect(() => {
     if (isContinuousVoiceMode && !voiceAgent.isActive) {

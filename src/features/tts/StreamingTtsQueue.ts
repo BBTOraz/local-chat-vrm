@@ -57,8 +57,10 @@ function detectBoundary(
   }
 
   // 2. Punctuation boundary: .!? followed by space or end-of-string
-  //    We scan left-to-right to find the first qualifying boundary.
-  for (let i = 0; i < buffer.length; i++) {
+  //    If the \n\n branch fell through (sentence too short), start scanning
+  //    after the paragraph break to avoid producing a sentence that spans it.
+  const searchStart = paraIdx !== -1 ? paraIdx + 2 : 0;
+  for (let i = searchStart; i < buffer.length; i++) {
     const ch = buffer[i];
     if (ch === "." || ch === "!" || ch === "?") {
       const isAtEnd = i === buffer.length - 1;
@@ -115,7 +117,7 @@ export class StreamingTtsQueue {
 
     this._buffer += token;
     this._isActive = true;
-    this._flush(false);
+    this._flush();
   }
 
   /**
@@ -153,23 +155,15 @@ export class StreamingTtsQueue {
 
   /**
    * Scan the buffer for sentence boundaries and enqueue synthesis for each
-   * complete sentence found.
-   *
-   * @param forceAll - when true, enqueue whatever is left in the buffer
-   *                   (used by endStream).
+   * complete sentence found. Stops when no more boundaries are detected.
    */
-  private _flush(forceAll: boolean): void {
+  private _flush(): void {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const result = detectBoundary(this._buffer);
       if (result) {
         this._buffer = result.remainder;
         this._enqueue(result.sentence);
-      } else if (forceAll && this._buffer.trim().length > 0) {
-        const remaining = this._buffer.trim();
-        this._buffer = "";
-        this._enqueue(remaining);
-        break;
       } else {
         break;
       }

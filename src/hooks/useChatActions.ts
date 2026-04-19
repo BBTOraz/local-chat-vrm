@@ -11,6 +11,11 @@ import { generateId } from "@/utils/id";
 import { streamAgentEvents, AgentStreamController } from "@/utils/sse";
 import { buildApiUrl } from "@/utils/config";
 import { StreamingTtsQueue } from "@/features/tts/StreamingTtsQueue";
+import {
+  streamingTtsQueueRef,
+  onSpeakChunkRef,
+  voiceAgentCallbackRef,
+} from "@/features/tts/ttsShared";
 import { synthesizeSpeechOpenAI } from "@/features/voices/openaiTts";
 
 type TitleResponse = string;
@@ -129,19 +134,6 @@ export const useChatActions = () => {
   const pendingTitleMessageRef = useRef<string | null>(null);
   const messageQueueRef = useRef<PendingMessage[]>([]);
   const isProcessingQueueRef = useRef(false);
-
-  /**
-   * Streaming TTS queue — created fresh for each sendAgentMessage call.
-   * External callers (e.g. VoiceModeController) can read this ref to wire
-   * onFirstChunkStart / get queue state.
-   */
-  const streamingTtsQueueRef = useRef<StreamingTtsQueue | null>(null);
-
-  /**
-   * Mutable callback that plays one ArrayBuffer chunk via the VRM viewer.
-   * Populated by VoiceModeController (which has viewer access) after mount.
-   */
-  const onSpeakChunkRef = useRef<((audio: ArrayBuffer) => Promise<void>) | null>(null);
 
   useEffect(() => {
     agentRunRef.current = state.agentRun;
@@ -277,6 +269,50 @@ export const useChatActions = () => {
     [dispatch]
   );
 
+  /**
+   * Create a fresh StreamingTtsQueue wired to the shared singletons.
+   * Extracted so both sendAgentMessage and SOLVER_STARTED can reuse it.
+   */
+  const createTtsQueue = useCallback((): StreamingTtsQueue => {
+    return new StreamingTtsQueue({
+      synthesize: async (text: string): Promise<ArrayBuffer> => {
+        const blob = await synthesizeSpeechOpenAI(text, { model: "tts-1", voice: "nova" });
+        return blob.arrayBuffer();
+      },
+      onSpeakChunk: async (audio: ArrayBuffer): Promise<void> => {
+        const speakFn = onSpeakChunkRef.current;
+        if (speakFn) {
+          await speakFn(audio);
+        } else {
+          // Fallback: plain HTML Audio playback when viewer callback not set
+          const blob = new Blob([audio], { type: "audio/mpeg" });
+          const url = URL.createObjectURL(blob);
+          const audioEl = new Audio(url);
+          await new Promise<void>((resolve) => {
+            audioEl.addEventListener("ended", () => {
+              URL.revokeObjectURL(url);
+              resolve();
+            });
+            audioEl.addEventListener("error", () => {
+              URL.revokeObjectURL(url);
+              resolve();
+            });
+            void audioEl.play().catch(() => resolve());
+          });
+        }
+      },
+      onFirstChunkStart: () => {
+        console.log("[StreamingTtsQueue] First chunk started");
+      },
+      onComplete: () => {
+        console.log("[StreamingTtsQueue] All chunks played");
+        // Notify voice agent that the response is finished so it can
+        // transition out of the speaking state and resume listening.
+        voiceAgentCallbackRef.current?.();
+      },
+    });
+  }, []);
+
   const handleAgentEvent = useCallback(
     (conversationId: string, event: AgentEvent) => {
       switch (event.stage) {
@@ -287,6 +323,13 @@ export const useChatActions = () => {
             run.iterations = [...run.iterations, iteration];
             return run;
           });
+          // Recreate TTS queue for retry iterations (after verifier rejection).
+          // sendAgentMessage already creates it for the first iteration, but if the
+          // verifier cancels the queue and the agent retries, a new SOLVER_STARTED
+          // fires without a new sendAgentMessage call — so the queue would be null.
+          if (state.isContinuousVoiceMode && !streamingTtsQueueRef.current) {
+            streamingTtsQueueRef.current = createTtsQueue();
+          }
           break;
         }
         case "SOLVER_TOKEN": {
@@ -496,7 +539,7 @@ export const useChatActions = () => {
           break;
       }
     },
-    [appendAssistantMessage, dispatch, refreshConversations, state.isContinuousVoiceMode, updateAgentRun]
+    [appendAssistantMessage, createTtsQueue, dispatch, refreshConversations, state.isContinuousVoiceMode, updateAgentRun]
   );
 
   const requestConversationTitle = useCallback(
@@ -576,40 +619,7 @@ export const useChatActions = () => {
 
       // Create a fresh StreamingTtsQueue for this agent run if voice mode is active
       if (state.isContinuousVoiceMode) {
-        streamingTtsQueueRef.current = new StreamingTtsQueue({
-          synthesize: async (text: string): Promise<ArrayBuffer> => {
-            const blob = await synthesizeSpeechOpenAI(text, { model: "tts-1", voice: "nova" });
-            return blob.arrayBuffer();
-          },
-          onSpeakChunk: async (audio: ArrayBuffer): Promise<void> => {
-            const speakFn = onSpeakChunkRef.current;
-            if (speakFn) {
-              await speakFn(audio);
-            } else {
-              // Fallback: plain HTML Audio playback when viewer callback not set
-              const blob = new Blob([audio], { type: "audio/mpeg" });
-              const url = URL.createObjectURL(blob);
-              const audioEl = new Audio(url);
-              await new Promise<void>((resolve) => {
-                audioEl.addEventListener("ended", () => {
-                  URL.revokeObjectURL(url);
-                  resolve();
-                });
-                audioEl.addEventListener("error", () => {
-                  URL.revokeObjectURL(url);
-                  resolve();
-                });
-                void audioEl.play().catch(() => resolve());
-              });
-            }
-          },
-          onFirstChunkStart: () => {
-            console.log("[StreamingTtsQueue] First chunk started");
-          },
-          onComplete: () => {
-            console.log("[StreamingTtsQueue] All chunks played");
-          },
-        });
+        streamingTtsQueueRef.current = createTtsQueue();
       }
 
       const body = {
@@ -644,6 +654,9 @@ export const useChatActions = () => {
           handleAgentEvent(conversationId, event);
         },
         onError: (error) => {
+          // Cancel TTS queue so in-flight synthesis promises don't play stale audio
+          streamingTtsQueueRef.current?.cancel();
+          streamingTtsQueueRef.current = null;
           dispatch({ type: "SET_ERROR", error: error.message });
           dispatch({ type: "SET_LOADING", value: false });
           updateAgentRun((run) => ({
@@ -660,7 +673,7 @@ export const useChatActions = () => {
         },
       });
     },
-    [dispatch, handleAgentEvent, state.settings, state.isContinuousVoiceMode, updateAgentRun]
+    [createTtsQueue, dispatch, handleAgentEvent, state.settings, state.isContinuousVoiceMode, updateAgentRun]
   );
 
   const sendAgentMessageRef = useRef<typeof sendAgentMessage>(sendAgentMessage);
@@ -796,7 +809,5 @@ export const useChatActions = () => {
     sendMessage,
     abortCurrentStream,
     getStreamController,
-    streamingTtsQueueRef,
-    onSpeakChunkRef,
   };
 };
