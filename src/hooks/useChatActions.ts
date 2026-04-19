@@ -13,6 +13,15 @@ import { buildApiUrl } from "@/utils/config";
 
 type TitleResponse = string;
 
+type PendingMessage = {
+  conversationId: string;
+  message: string;
+  retryCount: number;
+};
+
+const MAX_RETRY_COUNT = 3;
+const RETRY_DELAY_MS = 500;
+
 const API = {
   conversations: () => buildApiUrl("/api/conversations"),
   conversationMessages: (id: string) =>
@@ -116,6 +125,8 @@ export const useChatActions = () => {
   const agentRunRef = useRef<AgentRun | undefined>(undefined);
   const streamControllerRef = useRef<AgentStreamController | null>(null);
   const pendingTitleMessageRef = useRef<string | null>(null);
+  const messageQueueRef = useRef<PendingMessage[]>([]);
+  const isProcessingQueueRef = useRef(false);
 
   useEffect(() => {
     agentRunRef.current = state.agentRun;
@@ -298,7 +309,6 @@ export const useChatActions = () => {
             if (iteration) {
               const payload =
                 (event.data as Record<string, unknown>)?.documents ??
-                (event.data as Record<string, unknown>)?.items ??
                 extractMessage(event);
               const contexts = ensureArray(payload).filter(Boolean);
               if (contexts.length > 0) {
@@ -523,8 +533,8 @@ export const useChatActions = () => {
   );
 
   const sendAgentMessage = useCallback(
-    (conversationId: string, message: string) => {
-      if (streamControllerRef.current) {
+    (conversationId: string, message: string, isRetry = false) => {
+      if (streamControllerRef.current && !isRetry) {
         streamControllerRef.current.abort();
       }
 
@@ -541,7 +551,23 @@ export const useChatActions = () => {
         init: {
           body: JSON.stringify(body),
         },
-        onEvent: (event) => handleAgentEvent(conversationId, event),
+        onEvent: (event) => {
+          if (event.stage === "ERROR" && extractMessage(event).toLowerCase().includes("busy")) {
+            const existingInQueue = messageQueueRef.current.find(
+              (m) => m.conversationId === conversationId && m.message === message
+            );
+            
+            if (!existingInQueue) {
+              messageQueueRef.current.push({
+                conversationId,
+                message,
+                retryCount: 0,
+              });
+            }
+            return;
+          }
+          handleAgentEvent(conversationId, event);
+        },
         onError: (error) => {
           dispatch({ type: "SET_ERROR", error: error.message });
           dispatch({ type: "SET_LOADING", value: false });
@@ -550,15 +576,46 @@ export const useChatActions = () => {
             error: error.message,
             finishedAt: Date.now(),
           }));
+          processMessageQueue();
         },
         onComplete: () => {
           streamControllerRef.current = null;
           dispatch({ type: "SET_LOADING", value: false });
+          processMessageQueue();
         },
       });
     },
     [dispatch, handleAgentEvent, state.settings, updateAgentRun]
   );
+
+  const processMessageQueue = useCallback(() => {
+    if (isProcessingQueueRef.current || messageQueueRef.current.length === 0) {
+      return;
+    }
+
+    isProcessingQueueRef.current = true;
+    const pending = messageQueueRef.current.shift();
+    
+    if (!pending) {
+      isProcessingQueueRef.current = false;
+      return;
+    }
+
+    if (pending.retryCount >= MAX_RETRY_COUNT) {
+      console.warn("Max retry count reached for message:", pending.message);
+      isProcessingQueueRef.current = false;
+      processMessageQueue();
+      return;
+    }
+
+    pending.retryCount++;
+    
+    setTimeout(() => {
+      isProcessingQueueRef.current = false;
+      dispatch({ type: "SET_LOADING", value: true });
+      sendAgentMessage(pending.conversationId, pending.message, true);
+    }, RETRY_DELAY_MS * pending.retryCount);
+  }, [dispatch, sendAgentMessage]);
 
   const sendMessage = useCallback(
     async (rawMessage: string) => {
@@ -639,11 +696,25 @@ export const useChatActions = () => {
     };
   }, []);
 
+  const abortCurrentStream = useCallback(() => {
+    if (streamControllerRef.current) {
+      streamControllerRef.current.abort();
+      streamControllerRef.current = null;
+      dispatch({ type: "SET_LOADING", value: false });
+    }
+  }, [dispatch]);
+
+  const getStreamController = useCallback(() => {
+    return streamControllerRef.current;
+  }, []);
+
   return {
     refreshConversations,
     loadConversationMessages,
     selectConversation,
     createConversation,
     sendMessage,
+    abortCurrentStream,
+    getStreamController,
   };
 };
