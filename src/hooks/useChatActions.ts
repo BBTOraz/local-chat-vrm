@@ -564,6 +564,7 @@ export const useChatActions = () => {
                 retryCount: 0,
               });
             }
+            dispatch({ type: "SET_ERROR", error: "Server is busy, retrying..." });
             return;
           }
           handleAgentEvent(conversationId, event);
@@ -587,6 +588,11 @@ export const useChatActions = () => {
     },
     [dispatch, handleAgentEvent, state.settings, updateAgentRun]
   );
+
+  const sendAgentMessageRef = useRef<typeof sendAgentMessage>(sendAgentMessage);
+  useEffect(() => {
+    sendAgentMessageRef.current = sendAgentMessage;
+  }, [sendAgentMessage]);
 
   const processMessageQueue = useCallback(() => {
     if (isProcessingQueueRef.current || messageQueueRef.current.length === 0) {
@@ -613,9 +619,9 @@ export const useChatActions = () => {
     setTimeout(() => {
       isProcessingQueueRef.current = false;
       dispatch({ type: "SET_LOADING", value: true });
-      sendAgentMessage(pending.conversationId, pending.message, true);
+      sendAgentMessageRef.current(pending.conversationId, pending.message, true);
     }, RETRY_DELAY_MS * pending.retryCount);
-  }, [dispatch, sendAgentMessage]);
+  }, [dispatch]);
 
   const sendMessage = useCallback(
     async (rawMessage: string) => {
