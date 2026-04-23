@@ -41,10 +41,19 @@ The output of this session is not a large production rollout. It is:
 - any telemetry beyond the fixed minimal baseline;
 - any feature that cannot be implemented and verified in this session.
 
+## Timebox Rule
+
+If a checkpoint does not close within one focused implementation window of roughly 30-45 minutes, or verification remains blocked after a practical attempt, the item must be downgraded to `proposed but not yet implemented` with:
+
+- blocking reason;
+- evidence collected so far;
+- exact next-step command or verification action.
+
 ## Constraints
 
 - Work in both repositories is allowed.
 - Backend is the highest priority.
+- All work must remain on a non-`main`/non-`master` working branch.
 - Do not claim anything not confirmed by code, config, tests, or runtime artifacts.
 - Do not expand into heavy enterprise scope.
 - Do not do broad frontend refactoring.
@@ -118,6 +127,15 @@ Allowed custom tags should stay minimal and use only:
 - `operation`
 - `mode`
 
+Forbidden high-cardinality metric labels/tags:
+
+- `conversationId`
+- raw user text
+- exception message text
+- dynamic path parameters
+- generated IDs
+- timestamps
+
 Minimum structured logging scope:
 
 - event `conversation_message_submitted` with fields `conversationId`, `mode`, `messageLength`;
@@ -153,7 +171,13 @@ If time and verification permit after backend and monitoring work, add only the 
 
 Do not perform major frontend redesign or refactor.
 Do not exceed these three named scenarios in this session.
-If frontend verification is not implemented, replace this deliverable with a proposal-only package containing the scenario matrix, chosen tool, and evidence plan.
+If frontend verification is not implemented, replace this deliverable with a proposal-only package containing:
+
+- scenario matrix;
+- chosen tool;
+- runnable command skeleton;
+- QA matrix draft;
+- evidence plan.
 
 ### 6. Dissertation Artifacts Package
 
@@ -189,6 +213,7 @@ Codex acts as:
 - consolidation owner.
 
 User approval is the acceptance gate for the written spec and the final engineering package.
+Implementation may begin only after the user approves this spec.
 
 Subagents are used in two phases.
 
@@ -267,6 +292,20 @@ Each claimed item must include:
 - final status table and evidence checklist: `docs/dissertation/chapter3/session-status-and-evidence.md`
 - QA matrix: `docs/dissertation/chapter3/manual-qa-matrix.md`
 - frontend smoke/e2e notes: `docs/dissertation/chapter3/frontend-verification.md`
+- canonical monitoring artifacts in backend repo: `observability/`
+- current local backend resolution: `C:\Users\Tao\Desktop\Project\orchestra\observability\`
+- dashboard export copies for dissertation docs: `docs/dissertation/chapter3/artifacts/dashboards/`
+- log samples: `docs/dissertation/chapter3/artifacts/logs/`
+- screenshots index: `docs/dissertation/chapter3/artifacts/screenshots/README.md`
+- evidence samples: `docs/dissertation/chapter3/artifacts/evidence/`
+
+Artifact naming convention:
+
+- use zero-padded order values per artifact type: `01`, `02`, `03`, ...
+- dashboards: `<order>-<topic>-dashboard.json`
+- screenshots: `<order>-<topic>-screenshot.<ext>`
+- logs: `<order>-<topic>-sample.log`
+- evidence files: `<order>-<topic>-evidence.<ext>`
 
 ## Execution Checkpoints
 
@@ -311,15 +350,24 @@ If blocked by environment or runtime constraints, Checkpoint D may instead produ
 
 Required evidence:
 
-- `docker-compose` and Prometheus config present in the workspace;
-- one dashboard JSON or provisioning artifact present in the workspace;
+- `docker-compose` and Prometheus config present in the backend repo at `observability/`;
+- one dashboard JSON or provisioning artifact present in the backend repo at `observability/`;
 - one note showing scrape target and dashboard panel mapping.
+- expected scrape target format should be explicit, for example `host.docker.internal:8181` with metrics path `/actuator/prometheus`.
 
 ### Checkpoint E
 
 Frontend smoke/e2e scaffold and QA artifacts are in place.
 
 If backend and monitoring work consume the available scope or runtime verification is blocked, Checkpoint E may instead produce a proposal-only frontend verification package with the three capped scenarios and execution instructions.
+
+The fallback package must include:
+
+- proposal-only scenario matrix;
+- chosen tool;
+- runnable command skeleton;
+- QA matrix draft.
+- evidence plan.
 
 Required evidence:
 
@@ -351,8 +399,17 @@ Before implementation starts, confirm:
 - backend repo is present and readable;
 - backend startup path and configuration files are identifiable;
 - frontend API target is verified from configuration and mapped to the actual backend base URL in the current environment;
+- frontend repo branch is not `main` and not `master`;
+- backend repo branch is not `main` and not `master`;
+- frontend repo state is not detached HEAD;
+- backend repo state is not detached HEAD;
 - Docker is available for Prometheus/Grafana, or a documented fallback will be used;
 - if runtime verification is blocked, the affected item is downgraded to proposal-only.
+
+Pre-write branch gate:
+
+- before any file edit in either repo, verify branch safety in that repo;
+- if a target repo is on `main`, `master`, or detached HEAD, abort writes in that repo and stop for user direction only for work that touches that repo.
 
 ## Agent Write Boundaries
 
@@ -379,6 +436,7 @@ Before implementation starts, confirm:
 - repo: `C:\Users\Tao\Desktop\Project\orchestra`
 - allowed paths: backend source, backend resources, backend docs
 - no-touch: frontend repo
+- commit preference: one small logical commit for backend instrumentation only
 
 ### Monitoring Stack Worker
 
@@ -386,12 +444,19 @@ Before implementation starts, confirm:
 - required location: `observability/`
 - allowed files: `docker-compose`, Prometheus config, Grafana provisioning, dashboard JSON
 - no business-logic refactors
+- commit preference: one small logical commit for monitoring stack only
 
 ### Frontend Smoke/E2E Worker
 
 - repo: `C:\Users\Tao\Desktop\Project\local-chat-vrm`
 - allowed paths: test/config/docs only unless a tiny hook is required for testability
 - no UI refactor
+- commit preference: one small logical commit for frontend verification only
+
+### Orchestrator Documentation Updates
+
+- docs updates may be folded into the nearest related logical commit or kept as one separate docs-only commit
+- docs and evidence-copy updates in `local-chat-vrm` remain allowed even when canonical monitoring source artifacts live in `orchestra/observability/`
 
 ## Minimal Practical Scope
 
