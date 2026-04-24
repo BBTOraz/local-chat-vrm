@@ -1,31 +1,34 @@
 # Session Status And Evidence
 
-Date: 2026-04-23
+Date: 2026-04-24
 
 | Status label | Evidence source | Claim sentence | Dissertation artifact enabled |
 | --- | --- | --- | --- |
-| confirmed now | `git branch --show-current` in `local-chat-vrm` returned `feature/ui-upgrade-ai-elements` | The frontend/documentation repo is on a safe working branch and local docs work may proceed. | Methodology note on branch-safety governance |
-| confirmed now | `git -C C:\Users\Tao\Desktop\Project\orchestra branch --show-current` returned `main` | Backend writes are currently blocked by the approved branch gate because `orchestra` is on `main`. | Honest limitations table and execution log |
-| confirmed now | `docker --version` returned `Docker version 25.0.3, build 4debf41` | Docker is available locally for a Prometheus/Grafana baseline once backend implementation is allowed. | Monitoring deployment prerequisites table |
-| confirmed now | [`src/utils/config.ts`](C:/Users/Tao/Desktop/Project/local-chat-vrm/src/utils/config.ts:1) and [`application.properties`](C:/Users/Tao/Desktop/Project/orchestra/src/main/resources/application.properties:1) | Frontend and backend are configured around the same local base URL `http://localhost:8181`. | Integration configuration figure |
-| implemented in this session | [`docs/dissertation/chapter3/confirmed-system-map.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/confirmed-system-map.md:1) | A confirmed system map has been assembled from static code and configuration inspection across both repositories. | Architecture table and chapter-3 implementation map |
-| implemented in this session | [`docs/dissertation/chapter3/implementation-backlog.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/implementation-backlog.md:1) | A prioritized backlog now separates immediate backend/monitoring targets from downgrade-capable verification work. | Implementation backlog table |
-| proposed but not yet implemented | Approved design spec and execution plan | Backend observability implementation, Prometheus/Grafana baseline, and frontend verification remain planned but not yet implemented in this session. | Backlog and scope-control appendix |
+| confirmed now | `git branch --show-current` in `local-chat-vrm` returned `feature/ui-upgrade-ai-elements` on 2026-04-24 | The frontend/documentation repo is on a safe working branch and local docs work may proceed. | Methodology note on branch-safety governance |
+| confirmed now | `git -C C:\Users\Tao\Desktop\Project\orchestra branch --show-current` returned `chore/dissertation-observability-baseline` on 2026-04-24 | Backend writes are allowed on a non-`main` working branch. | Honest execution log and branch-governance note |
+| confirmed now | [`src/utils/config.ts`](C:/Users/Tao/Desktop/Project/local-chat-vrm/src/utils/config.ts:1) and [`application.properties`](C:/Users/Tao/Desktop/Project/orchestra/src/main/resources/application.properties:1) | Frontend and backend remain configured around the same local base URL `http://localhost:8181`. | Integration configuration figure |
+| confirmed now | `docker compose config` in `orchestra/observability` succeeded on 2026-04-24 | The monitoring baseline files are syntactically valid even though the Docker daemon is currently not running. | Monitoring deployment appendix |
+| implemented in this session | [`pom.xml`](C:/Users/Tao/Desktop/Project/orchestra/pom.xml:105), [`application.properties`](C:/Users/Tao/Desktop/Project/orchestra/src/main/resources/application.properties:90), [`OrchestraApplicationTests.java`](C:/Users/Tao/Desktop/Project/orchestra/src/test/java/bbt/tao/orchestra/OrchestraApplicationTests.java:1) | The backend now includes Prometheus registry support and an automated actuator smoke test for Prometheus exposure. | Observability configuration table |
+| implemented in this session | [`OrchestraTelemetry.java`](C:/Users/Tao/Desktop/Project/orchestra/src/main/java/bbt/tao/orchestra/observability/OrchestraTelemetry.java:1), [`AgentChatController.java`](C:/Users/Tao/Desktop/Project/orchestra/src/main/java/bbt/tao/orchestra/controller/AgentChatController.java:1), [`ConversationService.java`](C:/Users/Tao/Desktop/Project/orchestra/src/main/java/bbt/tao/orchestra/service/ConversationService.java:1), [`AgentChatClientsConfig.java`](C:/Users/Tao/Desktop/Project/orchestra/src/main/java/bbt/tao/orchestra/conf/AgentChatClientsConfig.java:1) | A minimal dissertation-oriented telemetry layer is implemented for SSE lifecycle, provider calls, provider latency, title generation, and structured operational events. | Metrics catalog table and instrumentation map |
+| implemented in this session | Focused backend verification command on 2026-04-24: `.\mvnw.cmd -Dtest=OrchestraApplicationTests,OrchestraTelemetryTest,AgentChatObservabilityTest,ConversationServiceObservabilityTest,AgentChatClientsConfigObservabilityTest test` returned `BUILD SUCCESS` | The focused backend observability test suite currently passes. | Verification evidence and reproducibility note |
+| implemented in this session | Controlled runtime proof on 2026-04-23: `/actuator` on port `8282` included `prometheus`, and `/actuator/prometheus` returned HTTP `200` with Prometheus-format metrics | Prometheus exposure was verified against a controlled backend instance independent of the stale process previously occupying port `8181`. | Actuator proof screenshot target |
+| implemented in this session | Monitoring verification on 2026-04-23: Prometheus target `http://host.docker.internal:8181/actuator/prometheus` reported `health: up`; Grafana `/api/health` returned database `ok`, version `13.0.1`; Grafana search returned `Orchestra API Overview` and `Orchestra Agent Flow` | The minimal monitoring baseline was verified once with live containers before the Docker daemon was later stopped. | Deployment evidence and dashboard screenshot targets |
+| implemented in this session | [`orchestra/observability`](C:/Users/Tao/Desktop/Project/orchestra/observability/docker-compose.yml:1) and copied dashboard artifacts in [`docs/dissertation/chapter3/artifacts/dashboards`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/artifacts/dashboards/01-api-overview-dashboard.json:1) | Canonical monitoring source files now exist in the backend repo, and dissertation-safe copies of dashboard JSON files exist in the docs repo. | Appendix with dashboard provenance |
+| implemented in this session | [`frontend-verification.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/frontend-verification.md:1) and [`manual-qa-matrix.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/manual-qa-matrix.md:1) | The frontend verification track has been downgraded to a proposal-only fallback package with runnable commands and a manual QA matrix. | QA appendix and scope-boundary section |
+| proposed but not yet implemented | Manual live run on 2026-04-23 against port `8181` produced agent SSE events and controlled backend errors, but `orchestra_*` metrics were not captured from the long-running dev instance scrape | Full live-runtime proof for custom telemetry in the shared dev instance cannot yet be claimed as confirmed evidence; the stable evidence for custom metrics/logs currently comes from focused tests. | Honest limitations table |
+| proposed but not yet implemented | No Playwright dependency or `tests/e2e` scaffold exists in the repo as of 2026-04-24 | Frontend smoke/e2e automation is still a recommended next step rather than an implemented fact. | Future-work and validation backlog |
 
 ## Current blockers
 
-- Backend branch gate is active for `C:\Users\Tao\Desktop\Project\orchestra`.
-- Exact next-step command if backend work is approved:
+- `orchestra` still has unrelated user changes in `.env.orchestra`, `application.properties`, `AgentChatClientsConfig.java`, and other files, so any commit must avoid accidentally bundling unrelated work.
+- The Docker daemon is currently not running on 2026-04-24, so live re-verification of Prometheus/Grafana cannot be repeated right now.
+- The strongest evidence for custom telemetry is the focused backend test suite. Live dev-instance evidence for `orchestra_*` metrics remains partial and should not be written as a confirmed fact.
 
-```text
-git -C C:\Users\Tao\Desktop\Project\orchestra switch -c chore/dissertation-observability-baseline
-```
+## Evidence checklist
 
-## Evidence checklist seed
-
-- Confirmed system map: pending population from `confirmed-system-map.md`
-- Prioritized backlog: created in `implementation-backlog.md`
-- Metrics endpoint proof: not available yet
-- Structured log samples: not available yet
-- Dashboard artifacts: not available yet
-- Frontend verification artifacts: not available yet
+- Confirmed system map: available in [`confirmed-system-map.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/confirmed-system-map.md:1)
+- Prioritized backlog: available in [`implementation-backlog.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/implementation-backlog.md:1)
+- Metrics endpoint proof: captured in [`01-observability-evidence.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/artifacts/evidence/01-observability-evidence.md:1)
+- Structured log samples: captured in [`01-backend-telemetry-sample.log`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/artifacts/logs/01-backend-telemetry-sample.log:1)
+- Dashboard artifacts: copied into [`artifacts/dashboards`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/artifacts/dashboards/01-api-overview-dashboard.json:1)
+- Frontend verification artifacts: available as proposal-only docs in [`frontend-verification.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/frontend-verification.md:1) and [`manual-qa-matrix.md`](C:/Users/Tao/Desktop/Project/local-chat-vrm/docs/dissertation/chapter3/manual-qa-matrix.md:1)

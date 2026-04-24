@@ -1,0 +1,15 @@
+# Focused backend observability test excerpt
+# Source command (2026-04-24):
+#   .\mvnw.cmd -Dtest=OrchestraApplicationTests,OrchestraTelemetryTest,AgentChatObservabilityTest,ConversationServiceObservabilityTest,AgentChatClientsConfigObservabilityTest test
+
+10:21:11.531 INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=provider_call_completed provider=open-router operation=web_client status=success latencyMs=508
+10:21:11.684 INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=provider_call_completed provider=open-router operation=rest_client status=success latencyMs=13
+10:21:13.244 INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=conversation_message_submitted conversationId=conv-2 mode=stream messageLength=7
+10:21:13.378 ERROR bbt.tao.orchestra.observability.OrchestraTelemetry -- event=application_error errorClass=IllegalStateException context=agent_chat_stream conversationId=conv-2
+10:21:13.386 INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=sse_stream_closed conversationId=conv-2 status=failed durationMs=141
+10:21:13.424 INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=conversation_message_submitted conversationId=conv-1 mode=stream messageLength=11
+10:21:13.4xx INFO  bbt.tao.orchestra.observability.OrchestraTelemetry -- event=sse_stream_closed conversationId=conv-1 status=completed durationMs=8
+
+# Note:
+# These lines are stable test evidence for the structured logging contract.
+# They should be cited as focused-test artifacts, not as proof of a full shared-dev runtime run.
