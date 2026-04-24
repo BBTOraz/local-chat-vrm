@@ -33,16 +33,27 @@ Pop-Location
   - Prometheus target `http://host.docker.internal:8181/actuator/prometheus` was `up`
   - Grafana `/api/health` returned database `ok`, version `13.0.1`
   - Grafana search returned `Orchestra API Overview` and `Orchestra Agent Flow`
+- Monitoring baseline was re-verified on 2026-04-24 after Docker returned:
+  - Prometheus target `http://host.docker.internal:8181/actuator/prometheus` was again `up`
+  - Grafana `/api/health` again returned database `ok`, version `13.0.1`
+  - Grafana search again returned `Orchestra API Overview` and `Orchestra Agent Flow`
+- Live backend runtime on 2026-04-24 produced:
+  - `500` on `/api/conversations`
+  - title-generation failure `Failed to obtain R2DBC Connection`
+  - successful SSE stream start plus controlled error for `/api/agent/chat/test-conv`
+  - standard `http_server_requests_seconds_*` metrics in `/actuator/prometheus`
+  - no observed `orchestra_*` metrics in the shared dev-instance scrape
+  - no observed `event=` structured telemetry lines in the captured live backend log
 
 ## Proposed but not yet implemented
 
 - Full frontend Playwright smoke automation
 - Screenshot capture for the final dissertation figure set
-- A resolved explanation for why the long-running shared dev instance on `8181` did not surface `orchestra_*` metrics during the manual runtime check
+- A resolved explanation for why the shared dev instance on `8181` still does not surface `orchestra_*` metrics during manual runtime checks
 
 ## Non-claimable items
 
-- Do not claim that full live custom telemetry has been confirmed in the shared dev backend runtime. The stable proof currently comes from focused tests plus controlled runtime proof for Prometheus exposure.
+- Do not claim that full live custom telemetry has been confirmed in the shared dev backend runtime. The stable proof currently comes from focused tests plus controlled runtime proof for Prometheus exposure and monitoring health.
 - Do not claim that frontend smoke/e2e automation is implemented.
 - Do not claim production-grade monitoring, SLA behavior, or enterprise reliability characteristics.
 
