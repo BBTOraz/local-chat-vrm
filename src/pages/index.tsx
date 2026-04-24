@@ -6,6 +6,7 @@ import { ThinkingPanel } from "@/components/thinking/ThinkingPanel";
 import { Meta } from "@/components/meta";
 import VrmViewer from "@/components/vrmViewer";
 import { SummarySpeaker } from "@/components/SummarySpeaker";
+import { VoiceModeController } from "@/components/VoiceModeController";
 import { ChatProvider, useChatState } from "@/state/chatStore";
 import { classNames } from "@/utils/classNames";
 import { useChatActions } from "@/hooks/useChatActions";
@@ -57,6 +58,7 @@ const Layout = () => {
       
       <MessageInputContainer />
       <SummarySpeaker />
+      <VoiceModeController />
     </div>
   );
 };

@@ -109,4 +109,5 @@ export type ChatState = {
   settings: ChatSettings;
   isSidebarCollapsed: boolean;
   isVoiceActive: boolean;
+  isContinuousVoiceMode: boolean;
 };

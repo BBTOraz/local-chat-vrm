@@ -4,7 +4,10 @@
  */
 
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-const OPENAI_API_BASE = import.meta.env.VITE_OPENAI_API_BASE || 'https://api.openai.com/v1';
+// В dev режиме используем Vite прокси для обхода CORS
+const OPENAI_API_BASE = import.meta.env.DEV 
+  ? '/openai-api' 
+  : (import.meta.env.VITE_OPENAI_API_BASE || 'https://api.openai.com/v1');
 
 /**
  * Get OpenAI API Key from environment

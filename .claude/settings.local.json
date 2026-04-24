@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(xargs grep *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(npx tsc *)",
+      "Bash(git stash *)",
+      "Bash(docker compose *)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName localhost -Port 5432 -InformationLevel Quiet 2>&1\")",
+      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\('OPENROUTER_API_KEY', 'User'\\); [System.Environment]::GetEnvironmentVariable\\('OPENROUTER_API_KEY', 'Machine'\\)\")",
+      "Bash(curl -s http://localhost:8181/actuator/health)",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -N -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json' -d '{\"message\": \"Привет! Скажи одно предложение о себе.\", \"provider\": \"open-router\"}' --max-time 30)",
+      "Bash(curl -s -N -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json' -H 'Accept: text/event-stream' -d '{\"message\": \"Привет! Скажи одно предложение о себе.\", \"provider\": \"open-router\"}' --max-time 30)",
+      "Bash(curl -v -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json' -H 'Accept: text/event-stream' -d '{\"message\": \"Привет\"}' --max-time 10)",
+      "Bash(curl -s -N -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json; charset=utf-8' -H 'Accept: text/event-stream' --data-raw '{\"message\": \"Hello, who are you?\"}' --max-time 30)",
+      "Bash(python -c \" import json,sys data=json.load\\(sys.stdin\\) models=[m for m in data.get\\('data',[]\\) if 'qwen' in m['id'].lower\\(\\) and 'coder' in m['id'].lower\\(\\)] for m in models: print\\(m['id']\\) \")",
+      "Bash(pkill -f \"spring-boot:run\")",
+      "Bash(pkill -f \"OrchestraApplication\")",
+      "Bash(powershell -Command \"Get-Process -Name 'java' | Stop-Process -Force\")",
+      "Bash(curl -s -N -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json' -H 'Accept: text/event-stream' --data-raw '{\"message\": \"Hello, say one sentence about yourself.\", \"provider\": \"open-router\"}' --max-time 40)",
+      "Bash(curl -s -N -X POST http://localhost:8181/api/agent/chat/__TRACKED_VAR__ -H 'Content-Type: application/json' -H 'Accept: text/event-stream' --data-raw '{\"message\": \"Кто основал ЕНУ и в каком году?\", \"provider\": \"open-router\"}' --max-time 60)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d['choices'][0]['message']['content']\\)\")",
+      "Bash(powershell -Command \"Get-Process -Name 'java' -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(xargs cat *)"
+    ]
+  }
+}

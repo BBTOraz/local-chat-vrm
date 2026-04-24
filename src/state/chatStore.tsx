@@ -68,6 +68,10 @@ type ChatAction =
   | {
       type: "SET_VOICE_ACTIVE";
       active: boolean;
+    }
+  | {
+      type: "SET_CONTINUOUS_VOICE_MODE";
+      active: boolean;
     };
 
 const initialState = (): ChatState => {
@@ -81,6 +85,7 @@ const initialState = (): ChatState => {
     settings,
     isSidebarCollapsed,
     isVoiceActive: false,
+    isContinuousVoiceMode: false,
   };
 };
 
@@ -173,6 +178,11 @@ const reducer = (state: ChatState, action: ChatAction): ChatState => {
       return {
         ...state,
         isVoiceActive: action.active,
+      };
+    case "SET_CONTINUOUS_VOICE_MODE":
+      return {
+        ...state,
+        isContinuousVoiceMode: action.active,
       };
     default:
       return state;

@@ -22,11 +22,8 @@ const deriveVisibility = (showThinking: boolean, debug: boolean) => {
   return showThinking ? "conversation" : "hint";
 };
 
-/**
- * Bottom dock with message composer and quick controls.
- */
 export const MessageInputContainer = () => {
-  const { loading, settings, isVoiceActive } = useChatState();
+  const { loading, settings, isVoiceActive, isContinuousVoiceMode } = useChatState();
   const dispatch = useChatDispatch();
   const { sendMessage } = useChatActions();
   const { viewer } = useContext(ViewerContext);
@@ -158,6 +155,10 @@ export const MessageInputContainer = () => {
     updateSettings({ debug, visibility });
   };
 
+  const handleContinuousVoiceModeToggle = useCallback(() => {
+    dispatch({ type: "SET_CONTINUOUS_VOICE_MODE", active: !isContinuousVoiceMode });
+  }, [dispatch, isContinuousVoiceMode]);
+
   const extendedMenu = (
     <div className={styles.extendedMenu}>
       <section className={styles.section}>
@@ -240,6 +241,22 @@ export const MessageInputContainer = () => {
               onChange={handleDebugToggle}
             />
             <span>Режим отладки (trace)</span>
+          </label>
+        </div>
+      </section>
+
+      <section className={styles.section}>
+        <header className={styles.sectionHeader}>
+          Голосовой режим
+        </header>
+        <div className={styles.detailOptions}>
+          <label className={styles.detailLabel}>
+            <input
+              type="checkbox"
+              checked={isContinuousVoiceMode}
+              onChange={handleContinuousVoiceModeToggle}
+            />
+            <span>Непрерывный диалог (hands-free)</span>
           </label>
         </div>
       </section>

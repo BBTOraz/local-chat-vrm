@@ -10,4 +10,15 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      // Прокси для OpenAI API (обход CORS)
+      '/openai-api': {
+        target: 'https://api.openai.com/v1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/openai-api/, ''),
+        secure: true,
+      },
+    },
+  },
 });
